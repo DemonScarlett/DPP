@@ -46,7 +46,7 @@ namespace MilSpace.Visibility
             observObjectsLabel.Text = selectedObservObjects;
 
             cmbEmptyDataValue.SelectedIndex = 1;
-
+            SetVOControlsVisibility(false);
         }
 
         private void LocalizeComponent()
@@ -134,6 +134,7 @@ namespace MilSpace.Visibility
                 this.lblStep.Text = LocalizationContext.Instance.FindLocalizedElement("MinM.lblStep.Text", "крок");
                 this.lblBufferDistance.Text = LocalizationContext.Instance.FindLocalizedElement("MinM.lblBufferDistance.Text", "Відстань для буфера");
                 this.lblCoveragePercent.Text = LocalizationContext.Instance.FindLocalizedElement("MinM.lblCoveragePercent.Text", "Відсоток покриття");
+                this.chckSaveOPParams.Text = LocalizationContext.Instance.FindLocalizedElement("MinM.chckSaveOPParams.Text", "Враховувати параметри ПН");
 
                 ToolTip toolTip = new ToolTip();
                 toolTip.SetToolTip(btnShowPoint, LocalizationContext.Instance.FindLocalizedElement("MinM.btnShowPoint.ToolTip", "Показати пункт спостеження на мапі"));
@@ -212,13 +213,13 @@ namespace MilSpace.Visibility
         {
             _stepControl = VisibilityCalcTypeEnum.BestObservationParameters;
             SetVOControlsVisibility(true);
-            controller.UpdateObservationPointsList();
+            //controller.UpdateObservationPointsList();
             EnableObjList();
             PopulateComboBox();
             PopulateObservationPointsTypesComboBox();
             PopulateObservationObjectsTypesComboBox();
-            FillObsObj(true);
-            FillObservPointsOnCurrentView(controller.GetObservPointsOnCurrentMapExtent(ActiveView));
+            //FillObsObj(true);
+           // FillObservPointsOnCurrentView(controller.GetObservPointsOnCurrentMapExtent(ActiveView));
         }
 
         public void FillObservPointLabel()
@@ -297,16 +298,16 @@ namespace MilSpace.Visibility
                     }).OrderBy(l => l.Title).ToList();
 
 
-                dvgCheckList.Rows.Clear();
-                dvgCheckList.CurrentCell = null;
+                dgvCheckList.Rows.Clear();
+                dgvCheckList.CurrentCell = null;
 
                 _observPointGuis = new BindingList<CheckObservPointGui>(ItemsToShow);
-                dvgCheckList.DataSource = _observPointGuis;
+                dgvCheckList.DataSource = _observPointGuis;
 
                 SetDataGridView();
 
-                dvgCheckList.Update();
-                dvgCheckList.Rows[0].Selected = true;
+                dgvCheckList.Update();
+                dgvCheckList.Rows[0].Selected = true;
             }
 
         }
@@ -336,12 +337,12 @@ namespace MilSpace.Visibility
 
                 BindingList<CheckObservPointGui> temp = new BindingList<CheckObservPointGui>(_observPointGuis);
 
-                dvgCheckList.CurrentCell = null;
+                dgvCheckList.CurrentCell = null;
 
-                dvgCheckList.DataSource = temp;
+                dgvCheckList.DataSource = temp;
                 SetDataGridView();
 
-                dvgCheckList.Update();
+                dgvCheckList.Update();
 
             }
         }
@@ -454,24 +455,27 @@ namespace MilSpace.Visibility
         {
             try
             {
-                dvgCheckList.Columns["Check"].HeaderText = "";
-                dvgCheckList.Columns["Id"].Visible = false;
+                dgvCheckList.Columns["Check"].HeaderText = "";
+                dgvCheckList.Columns["Id"].Visible = false;
 
-                dvgCheckList.Columns["Date"].ReadOnly = true;
-                dvgCheckList.Columns["Type"].ReadOnly = true;
-                dvgCheckList.Columns["Affiliation"].ReadOnly = true;
-                dvgCheckList.Columns["Title"].ReadOnly = true;
+                dgvCheckList.Columns["Date"].ReadOnly = true;
+                dgvCheckList.Columns["Type"].ReadOnly = true;
+                dgvCheckList.Columns["Affiliation"].ReadOnly = true;
+                dgvCheckList.Columns["Title"].ReadOnly = true;
 
-                dvgCheckList.Columns["Affiliation"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCellsExceptHeader;
-                dvgCheckList.Columns["Title"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                dvgCheckList.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCellsExceptHeader;
+                dgvCheckList.Columns["Affiliation"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCellsExceptHeader;
+                dgvCheckList.Columns["Title"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                dgvCheckList.Columns["Type"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCellsExceptHeader;
 
-                dvgCheckList.Columns["Affiliation"].MinimumWidth = 50;
-                dvgCheckList.Columns["Title"].MinimumWidth = 50;
-                dvgCheckList.Columns["Type"].MinimumWidth = 50;
-                dvgCheckList.Columns["Date"].MinimumWidth = 50;
-                dvgCheckList.Columns["Chck"].MinimumWidth = 25;
+                dgvCheckList.Columns["Affiliation"].MinimumWidth = 50;
+                dgvCheckList.Columns["Title"].MinimumWidth = 50;
+                dgvCheckList.Columns["Type"].MinimumWidth = 50;
+                dgvCheckList.Columns["Date"].MinimumWidth = 50;
 
+                if (dgvCheckList.Columns.Contains("Chck"))
+                {
+                    dgvCheckList.Columns["Chck"].MinimumWidth = 25;
+                }
             }
             catch (NullReferenceException)
             {
@@ -508,7 +512,7 @@ namespace MilSpace.Visibility
 
         private void Filter_CheckedChanged(object sender, EventArgs e)
         {
-            DisplaySelectedColumns_Points(dvgCheckList);
+            DisplaySelectedColumns_Points(dgvCheckList);
         }
 
         private void Filter_For_Object_CheckedChanged(object sender, EventArgs e)
@@ -535,8 +539,8 @@ namespace MilSpace.Visibility
                 o.Check = chckOP.Checked;
             }
 
-            dvgCheckList.DataSource = _observPointGuis;
-            dvgCheckList.Refresh();
+            dgvCheckList.DataSource = _observPointGuis;
+            dgvCheckList.Refresh();
         }
         public ValuableObservPointFieldsEnum GetFilter
         {
@@ -565,26 +569,26 @@ namespace MilSpace.Visibility
         private  void FilterPointsData()
         {
 
-            if (dvgCheckList.Rows.Count == 0)
+            if (dgvCheckList.Rows.Count == 0)
             {
                 return;
             }
 
-            dvgCheckList.CurrentCell = null;
+            dgvCheckList.CurrentCell = null;
 
             var mobilityValue = cmbType.SelectedItem.ToString();
             var affiliationValue = cmbAffiliation.SelectedItem.ToString();
 
-            foreach (DataGridViewRow row in dvgCheckList.Rows)
+            foreach (DataGridViewRow row in dgvCheckList.Rows)
             {
                 bool allowVisibleType = (mobilityValue == _allValuesMobility) || row.Cells["Type"].Value.Equals(mobilityValue);
                 bool allowVisibleAffiliation = (affiliationValue == _allValuesFilterText) || row.Cells["Affiliation"].Value.Equals(affiliationValue);
                 row.Visible = allowVisibleType && allowVisibleAffiliation;
             }
 
-            if (dvgCheckList.FirstDisplayedScrollingRowIndex != -1)
+            if (dgvCheckList.FirstDisplayedScrollingRowIndex != -1)
             {
-                dvgCheckList.Rows[dvgCheckList.FirstDisplayedScrollingRowIndex].Selected = true;
+                dgvCheckList.Rows[dgvCheckList.FirstDisplayedScrollingRowIndex].Selected = true;
             }
         }
 
@@ -634,6 +638,38 @@ namespace MilSpace.Visibility
 
         private void AssemblyWizardResult()
         {
+            if (_stepControl == VisibilityCalcTypeEnum.BestObservationParameters)
+            {
+                SaveObservationPointParams();
+
+                double fromHeight;
+                if(!txtMinHeight.Text.TryParceToDouble(out fromHeight))
+                {
+                    fromHeight = 0;
+                }
+
+                double toHeight;
+                if(!txtMinHeight.Text.TryParceToDouble(out toHeight))
+                {
+                    toHeight = 0;
+                }
+
+                FinalResult = new WizardResult
+                {
+                    ObservationPoint = _selectedObservationPoint,
+                    ObservationStation = controller.CalculateGeometryWithBuffer(_selectedGeometry, Convert.ToInt32(txtBufferDistance.Text)),
+                    RasterLayerName = imagesComboBox.SelectedItem.ToString(),
+                    CalculationType = _stepControl,
+                    TaskName = VisibilityManager.GenerateResultId(LocalizationContext.Instance.CalcTypeLocalisationShort[_stepControl]),
+                    FromHeight = fromHeight,
+                    ToHeight = toHeight,
+                    Step = Convert.ToInt32(txtStep.Text),
+                    VisibilityPercent = Convert.ToInt16(txtCoveragePercent.Text),
+                    VisibilityCalculationResults = VisibilityCalculationResultsEnum.BestParametersTable
+                };
+
+                return;
+            }
 
             FinalResult = new WizardResult
             {
@@ -748,6 +784,7 @@ namespace MilSpace.Visibility
             {
                 if (!FinalResult.VisibilityCalculationResults.HasFlag(VisibilityCalculationResultsEnum.ObservationPoints)
                     && !FinalResult.VisibilityCalculationResults.HasFlag(VisibilityCalculationResultsEnum.ObservationPointSingle)
+                    && !FinalResult.VisibilityCalculationResults.HasFlag(VisibilityCalculationResultsEnum.BestParametersTable)
                     )
                 {
                     MessageBox.Show(
@@ -948,6 +985,29 @@ namespace MilSpace.Visibility
             if (_selectedGeometry != null)
             {
                 controller.ShowGeometry(_selectedGeometry, Convert.ToInt32(txtBufferDistance.Text));
+            }
+        }
+
+        private void SaveObservationPointParams()
+        {
+            if (txtMinAzimuth.Text.TryParceToDouble(out double minAzimuth))
+            {
+                _selectedObservationPoint.AzimuthStart = minAzimuth;
+            }
+
+            if (txtMaxAzimuth.Text.TryParceToDouble(out double maxAzimuth))
+            {
+                _selectedObservationPoint.AzimuthEnd = maxAzimuth;
+            }
+
+            if (txtMinAngle.Text.TryParceToDouble(out double minAngle))
+            {
+                _selectedObservationPoint.AngelMinH = minAngle;
+            }
+
+            if (txtMaxAngle.Text.TryParceToDouble(out double maxAngle))
+            {
+                _selectedObservationPoint.AngelMaxH = maxAngle;
             }
         }
 

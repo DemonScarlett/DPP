@@ -439,7 +439,7 @@ namespace MilSpace.Core.Tools
                 else
                 { throw new KeyNotFoundException("{0} cannot be found in the Symbol dictionary".InvariantFormat(geometry.GeometryType)); }
             });
-            logger.InfoEx("FlashGeometry. Finishibng drawing..");
+            logger.InfoEx("FlashGeometry. Finishing drawing..");
             display.FinishDrawing();
 
             tagRECT rect = new tagRECT();
@@ -1532,20 +1532,9 @@ namespace MilSpace.Core.Tools
                 }
             }
 
-            // Calculate a distance from observation point to the end of inner radius (min distance) - hypotenuse
-            var toMinPointDistance = Math.Sqrt(Math.Pow(height, 2) + Math.Pow(minDistance, 2));
-
-            // Find the angle between perpendicular from observation point to surface (height), 
-            // which is the tilt angle to the nearest possible point from observation point
-            //              |\
-            //              | \ <---- this angle
-            //      1 ---- >|  \
-            //              |   \
-            //              |    \
-            //              |_____\<---- 2     1- height 2- min distance (inner radius)
-            var sin = minDistance / toMinPointDistance;
-            var angle = -90 + Math.Asin(sin) * (180 / Math.PI);
-
+            // Find the tilt angle to the nearest point from observation point
+            var angle = FindAngleByDistanceAndHeight(height, minDistance);
+            
             // If founded angle less than the min angle from parameters return the distance to the 
             // intersection of the surface and the lower tilt limit
             if (angle < minAngle)
@@ -1562,19 +1551,8 @@ namespace MilSpace.Core.Tools
 
         public static double GetMaxDistance(double maxDistance, double maxAngle, double height)
         {
-            // Calculate a distance from observation point to the end of outer radius (max distance) - hypotenuse
-            var toMinPointDistance = Math.Sqrt(Math.Pow(height, 2) + Math.Pow(maxDistance, 2));
-
-            // Find the angle between perpendicular from observation point to surface (height), 
-            // which is the tilt angle to the farthest possible point from observation point
-            //              |\
-            //              | \ <---- this angle
-            //      1 - >   |  \
-            //              |   \
-            //              |    \
-            //              |_____\<-2     1- height 2- max distance (outer radius)
-            var sin = maxDistance / toMinPointDistance;
-            var angle = -90 + Math.Asin(sin) * (180 / Math.PI);
+            // Find the tilt angle to the farthest point from observation point
+            var angle = FindAngleByDistanceAndHeight(height, maxDistance);
 
             // If founded angle more than the max angle from parameters return the distance to the 
             // intersection of the surface and the upper tilt limit
@@ -1588,6 +1566,25 @@ namespace MilSpace.Core.Tools
             {
                 return maxDistance;
             }
+        }
+
+        public static double FindAngleByDistanceAndHeight(double height, double distance)
+        {
+            // Calculate a distance from point to the end of required distance - hypotenuse
+            var toMaxPointDistance = Math.Sqrt(Math.Pow(height, 2) + Math.Pow(distance, 2));
+
+            // Find the angle between perpendicular from observation point to surface (height), 
+            // which is the tilt angle to the required point 
+            //              |\
+            //              | \ <---- this angle
+            //      1 - >   |  \
+            //              |   \
+            //              |    \
+            //              |_____\<-2     1- height 2- required distance
+            var sin = distance / toMaxPointDistance;
+            var angle = -90 + Math.Asin(sin) * (180 / Math.PI);
+
+            return angle;
         }
 
         public static IPolygon GetCoverageArea(

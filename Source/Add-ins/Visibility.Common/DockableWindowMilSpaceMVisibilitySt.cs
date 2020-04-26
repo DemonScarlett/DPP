@@ -1983,7 +1983,7 @@ namespace MilSpace.Visibility
 
                     _observPointsController.UpdataPreviousPickedRasterLayer(calcParams.RasterLayerName);
 
-                    var clculated = _observPointsController.CalculateVisibility(calcParams);
+                    var clculated = _observPointsController.ExsecuteVisibilityCalculations(calcParams);
 
                     if (!clculated)
                     {

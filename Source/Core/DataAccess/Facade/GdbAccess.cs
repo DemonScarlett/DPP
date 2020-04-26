@@ -280,13 +280,76 @@ namespace MilSpace.DataAccess.Facade
             return null;
         }
 
+        public IFeatureClass GenerateTemporaryObservationPointFeatureClass(IFields observPointsFCFields, string name)
+        {
+            IWorkspaceEdit workspaceEdit = (IWorkspaceEdit)calcWorkspace;
+            workspaceEdit.StartEditing(true);
+            workspaceEdit.StartEditOperation();
+
+            string newFeatureClassName = $"{name}{Helper.GetTemporaryNameSuffix()}";
+
+            IFeatureClass featureClass = null;
+
+            IWorkspace2 wsp2 = (IWorkspace2)calcWorkspace;
+            IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)calcWorkspace;
+
+            if (!wsp2.get_NameExists(esriDatasetType.esriDTFeatureClass, newFeatureClassName))
+            {
+                IFeatureClassDescription fcDescription = new FeatureClassDescriptionClass();
+                IObjectClassDescription ocDescription = (IObjectClassDescription)fcDescription;
+
+                 featureClass = featureWorkspace.CreateFeatureClass(newFeatureClassName, observPointsFCFields,
+                        ocDescription.InstanceCLSID, ocDescription.ClassExtensionCLSID,
+                        esriFeatureType.esriFTSimple, "shape", "");
+            }
+
+            workspaceEdit.StopEditOperation();
+            workspaceEdit.StopEditing(true);
+
+            return featureClass;
+        }
+
+        public ITable GenerateVOTable(IFields observPointsFCFields, string tableName)
+        {
+            IWorkspaceEdit workspaceEdit = (IWorkspaceEdit)calcWorkspace;
+            workspaceEdit.StartEditing(true);
+            workspaceEdit.StartEditOperation();
+
+            ITable table = null;
+
+            IWorkspace2 wsp2 = (IWorkspace2)calcWorkspace;
+            IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)calcWorkspace;
+
+            try
+            {
+                if (!wsp2.get_NameExists(esriDatasetType.esriDTTable, tableName))
+                {
+                    table = featureWorkspace.CreateTable(tableName, observPointsFCFields, null, null, "");
+                }
+                else
+                {
+                    table = featureWorkspace.OpenTable(tableName);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.ErrorEx($"Cannot create table {tableName} /n{ex.Message}");
+                return null;
+            }
+
+            workspaceEdit.StopEditOperation();
+            workspaceEdit.StopEditing(true);
+
+            return table;
+        }
+
         public string GenerateTempProfileLinesStorage()
         {
             IWorkspaceEdit workspaceEdit = (IWorkspaceEdit)calcWorkspace;
             workspaceEdit.StartEditing(true);
             workspaceEdit.StartEditOperation();
 
-            string newFeatureClassName = $"{profileCalcFeatureClass}{MilSpace.DataAccess.Helper.GetTemporaryNameSuffix()}";
+            string newFeatureClassName = $"{profileCalcFeatureClass}{Helper.GetTemporaryNameSuffix()}";
 
             IWorkspace2 wsp2 = (IWorkspace2)calcWorkspace;
             IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)calcWorkspace;
@@ -815,6 +878,53 @@ namespace MilSpace.DataAccess.Facade
             return newFeatureClassName;
         }
 
+        public IFeatureClass GenerateTempStorage(string featureClassName, IFields fields,
+                                                    esriGeometryType type, IActiveView activeView = null,
+                                                    bool isZAware = true, bool addSuffix = false)
+        {
+            IFeatureClass featureClass = null;
+            
+            if(addSuffix)
+            {
+                featureClassName += Helper.GetTemporaryNameSuffix();
+            }
+
+            IWorkspaceEdit workspaceEdit = (IWorkspaceEdit)calcWorkspace;
+            workspaceEdit.StartEditing(true);
+            workspaceEdit.StartEditOperation();
+
+            IWorkspace2 wsp2 = (IWorkspace2)calcWorkspace;
+            IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)calcWorkspace;
+
+            if (!wsp2.get_NameExists(esriDatasetType.esriDTFeatureClass, featureClassName))
+            {
+                IFeatureClassDescription fcDescription = new FeatureClassDescriptionClass();
+                IObjectClassDescription ocDescription = (IObjectClassDescription)fcDescription;
+
+                if (fields == null)
+                {
+                    fields = ocDescription.RequiredFields;
+
+                    int shapeFieldIndex = fields.FindField(fcDescription.ShapeFieldName);
+
+                    IField field = fields.get_Field(shapeFieldIndex);
+                    IGeometryDef geometryDef = field.GeometryDef;
+                    IGeometryDefEdit geometryDefEdit = (IGeometryDefEdit)geometryDef;
+                    geometryDefEdit.HasZ_2 = isZAware;
+                    geometryDefEdit.GeometryType_2 = type;
+                    geometryDefEdit.SpatialReference_2 = (activeView == null)? ArcMapInstance.Document.FocusMap.SpatialReference : activeView.FocusMap.SpatialReference;
+                }
+
+                featureClass = featureWorkspace.CreateFeatureClass(featureClassName, fields,
+                   ocDescription.InstanceCLSID, ocDescription.ClassExtensionCLSID, esriFeatureType.esriFTSimple, "shape", "");
+            }
+
+            workspaceEdit.StopEditOperation();
+            workspaceEdit.StopEditing(true);
+
+            return featureClass;
+        }
+
         private string GenerateTemp3DPointStorage()
         {
             string newFeatureClassName = $"Point3D_L{Helper.GetTemporaryNameSuffix()}";
@@ -870,43 +980,6 @@ namespace MilSpace.DataAccess.Facade
 
             GenerateTempStorage(newFeatureClassName, fields, esriGeometryType.esriGeometryPolygon);
             return newFeatureClassName;
-        }
-
-
-        private void GenerateTempStorage(string featureClassName, IFields fields, esriGeometryType type)
-        {
-            IWorkspaceEdit workspaceEdit = (IWorkspaceEdit)calcWorkspace;
-            workspaceEdit.StartEditing(true);
-            workspaceEdit.StartEditOperation();
-
-            IWorkspace2 wsp2 = (IWorkspace2)calcWorkspace;
-            IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)calcWorkspace;
-
-            if (!wsp2.get_NameExists(esriDatasetType.esriDTFeatureClass, featureClassName))
-            {
-                IFeatureClassDescription fcDescription = new FeatureClassDescriptionClass();
-                IObjectClassDescription ocDescription = (IObjectClassDescription)fcDescription;
-
-                if (fields == null)
-                {
-                    fields = ocDescription.RequiredFields;
-
-                    int shapeFieldIndex = fields.FindField(fcDescription.ShapeFieldName);
-
-                    IField field = fields.get_Field(shapeFieldIndex);
-                    IGeometryDef geometryDef = field.GeometryDef;
-                    IGeometryDefEdit geometryDefEdit = (IGeometryDefEdit)geometryDef;
-                    geometryDefEdit.HasZ_2 = true;
-                    geometryDefEdit.GeometryType_2 = type;
-                    geometryDefEdit.SpatialReference_2 = ArcMapInstance.Document.FocusMap.SpatialReference;
-                }
-
-                IFeatureClass featureClass = featureWorkspace.CreateFeatureClass(featureClassName, fields,
-                    ocDescription.InstanceCLSID, ocDescription.ClassExtensionCLSID, esriFeatureType.esriFTSimple, "shape", "");
-            }
-
-            workspaceEdit.StopEditOperation();
-            workspaceEdit.StopEditing(true);
         }
 
         private void SetObservPointValues(IFeatureClass featureClass, IFeature pointFeature, IPoint point, ObservationPoint pointArgs)
@@ -1037,7 +1110,7 @@ namespace MilSpace.DataAccess.Facade
         {
             ITable table;
             IFieldsEdit fieldsEdit = new FieldsClass();
-
+            
             IFieldEdit2 fieldId = new FieldClass() as IFieldEdit2;
             fieldId.Name_2 = "OBJECTID";
             fieldId.Type_2 = esriFieldType.esriFieldTypeOID;
@@ -1253,6 +1326,66 @@ namespace MilSpace.DataAccess.Facade
             catch (Exception ex)
             {
                 logger.ErrorEx($"> FillVSCoverageTable EXCEPTION. An error occured during table {tableName} filling: {ex.Message}");
+            }
+        }
+
+        public void FillBestParametersTable(List<IFeature> observPointBestParams, ITable table, string tableName)
+        {
+            logger.InfoEx("> FillVSCoverageTable START tableName:{0}", tableName);
+
+            IWorkspaceEdit workspaceEdit = (IWorkspaceEdit)calcWorkspace;
+            workspaceEdit.StartEditing(true);
+            workspaceEdit.StartEditOperation();
+
+            try
+            {
+                foreach (var feature in observPointBestParams)
+                {
+                    var newRow = table.CreateRow();
+                    var featureFields = feature.Fields;
+                    
+                    for(int i = 0; i < featureFields.FieldCount; i++)
+                    {
+                        var fieldIndex = table.FindField(featureFields.Field[i].Name);
+                        if (fieldIndex >= 0)
+                        {
+                            newRow.Value[fieldIndex] = feature.Value[i];
+                        }
+                    }
+
+                    newRow.Store();
+                }
+                //    var newRow = table.CreateRow();
+
+                //    newRow.Value[table.FindField(feature.)] = row.ObservPointName;
+
+                //    if (row.ObservPointId != -1)
+                //    {
+                //        newRow.Value[table.FindField("IdOP")] = row.ObservPointId;
+                //    }
+
+                //    newRow.Value[table.FindField("ExpectedVisibilityArea")] = row.ExpectedArea;
+                //    newRow.Value[table.FindField("VisibilityArea")] = row.VisibilityArea;
+                //    newRow.Value[table.FindField("VisibilityPercentage")] = row.VisibilityPercent;
+                //    newRow.Value[table.FindField("CurrentToAllExpectedVAPercentage")] = row.ToAllExpectedAreaPercent;
+                //    newRow.Value[table.FindField("CurrentVAToAllExpectedVAPercentage")] = row.ToAllVisibilityAreaPercent;
+
+                //    if (row.ObservPointsSeeCount != -1)
+                //    {
+                //        newRow.Value[table.FindField("OPSee")] = row.ObservPointsSeeCount;
+                //    }
+
+                //    newRow.Store();
+                //}
+
+                workspaceEdit.StopEditOperation();
+                workspaceEdit.StopEditing(true);
+
+                logger.InfoEx("> FillBestParametersTable END");
+            }
+            catch (Exception ex)
+            {
+                logger.ErrorEx($"> FillBestParametersTable EXCEPTION. An error occured during table {tableName} filling: {ex.Message}");
             }
         }
 

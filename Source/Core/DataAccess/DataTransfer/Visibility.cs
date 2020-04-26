@@ -24,8 +24,8 @@ namespace MilSpace.DataAccess.DataTransfer
             { VisibilityCalculationResultsEnum.VisibilityAreasTrimmedByPoly , "_imgt"},
             { VisibilityCalculationResultsEnum.VisibilityAreaTrimmedByPolySingle , "_imgts"},
             { VisibilityCalculationResultsEnum.VisibilityAreasPotential , "_pva_r" },
-            { VisibilityCalculationResultsEnum.VisibilityAreaPotentialSingle , "_pvas_r" }
-
+            { VisibilityCalculationResultsEnum.VisibilityAreaPotentialSingle , "_pvas_r" },
+            { VisibilityCalculationResultsEnum.BestParametersTable , "_bp"}
         };
 
         private static Dictionary<VisibilityCalcTypeEnum, IEnumerable<VisibilityCalculationResultsEnum>> ResultsToShow = new Dictionary<VisibilityCalcTypeEnum, IEnumerable<VisibilityCalculationResultsEnum>>

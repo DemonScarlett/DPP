@@ -234,10 +234,11 @@
   <MinM.lblCoveragePercent.Text>Відсоток покриття (%)</MinM.lblCoveragePercent.Text>
   <MinM.btnShowPoint.ToolTip>Показати пункт спостеження на мапі</MinM.btnShowPoint.ToolTip>
   <MinM.btnShowOO.ToolTip>Показати об'єкт спостереження на мапі</MinM.btnShowOO.ToolTip>
-
+  <MinM.chckSaveOPParams.Text>Враховувати параметри ПН</MinM.chckSaveOPParams.Text>
+  
   <WinMErrorValueOutRange>Недійсні дані. Потрібне значення від 0 до 100"</WinMErrorValueOutRange>
-  <WinMWarningNoSourceForCalculation>Не вказано поверню для розрахунку</WinMWarningNoSourceForCalculation>
-  <WinMWarningNoRasterLayrSelected>Растровій шар повине бути обраним</WinMWarningNoRasterLayrSelected>
+  <WinMWarningNoSourceForCalculation>Не вказано поверхню для розрахунку</WinMWarningNoSourceForCalculation>
+  <WinMWarningNoRasterLayrSelected>Растровій шар повинен бути обраним</WinMWarningNoRasterLayrSelected>
 
   <!-- ######################################################################### -->
   <WinDB.Caption>Спостереження. Додати результати з БД</WinDB.Caption>
