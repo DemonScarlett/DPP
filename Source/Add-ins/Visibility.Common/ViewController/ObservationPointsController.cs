@@ -696,7 +696,7 @@ namespace MilSpace.Visibility.ViewController
                 calcParams.TaskName,
                 calcParams.CalculationType,
                 mapDocument.ActiveView.FocusMap,
-                0);
+                100);
 
             exx++;
 

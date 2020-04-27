@@ -705,7 +705,14 @@ namespace MilSpace.DataAccess.Facade
                 var featureName = datasetNames.Next().Name;
                 while (!featureName.EndsWith(featureClass))
                 {
-                    featureName = datasetNames.Next().Name;
+                    var dataset = datasetNames.Next();
+
+                    if(dataset == null)
+                    {
+                        return null;
+                    }
+
+                    featureName = dataset.Name;
                 }
 
                 featureClass = featureName;

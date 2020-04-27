@@ -137,18 +137,18 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
 
             string oservStationsFeatureClassName = null;
 
-            if (calcResults.HasFlag(VisibilityCalculationResultsEnum.BestParametersTable))
-            {
-                var isBestParamsFound = BestOPParametersManager.FindBestOPParameters(obserpPointsfeatureClass,
-                                                                                    obserpStationsfeatureClass,
-                                                                                    stationsFilteringIds,
-                                                                                    pointsFilteringIds,
-                                                                                    outputSourceName,
-                                                                                    rasterSource,
-                                                                                    visibilityPercent);
+            //if (calcResults.HasFlag(VisibilityCalculationResultsEnum.BestParametersTable))
+            //{
+            //    var isBestParamsFound = BestOPParametersManager.FindBestOPParameters(obserpPointsfeatureClass,
+            //                                                                        obserpStationsfeatureClass,
+            //                                                                        stationsFilteringIds,
+            //                                                                        pointsFilteringIds,
+            //                                                                        outputSourceName,
+            //                                                                        rasterSource,
+            //                                                                        visibilityPercent);
 
-                return messages;
-            }
+            //    return messages;
+            //}
 
             //Handle Observation Objects
             if (calcResults.HasFlag(VisibilityCalculationResultsEnum.ObservationObjects))
@@ -173,12 +173,17 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
                     return messages;
                 }
             }
+            else if(calcResults.HasFlag(VisibilityCalculationResultsEnum.BestParametersTable))
+            {
+                oservStationsFeatureClassName = obserpStationsfeatureClass.AliasName;
+            }
+
 
             //Handle Observation Points
             List<KeyValuePair<VisibilityCalculationResultsEnum, int[]>> pointsIDs =
                 new List<KeyValuePair<VisibilityCalculationResultsEnum, int[]>>();
 
-            if (calcResults.HasFlag(VisibilityCalculationResultsEnum.VisibilityAreaRaster))
+            if (calcResults.HasFlag(VisibilityCalculationResultsEnum.VisibilityAreaRaster) && !calcResults.HasFlag(VisibilityCalculationResultsEnum.BestParametersTable))
             {
                 pointsIDs.Add(
                     new KeyValuePair<VisibilityCalculationResultsEnum, int[]>(
@@ -204,6 +209,15 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
                 }
             }
 
+            if(calcResults.HasFlag(VisibilityCalculationResultsEnum.BestParametersTable))
+            {
+                pointsIDs.AddRange(
+                        pointsFilteringIds.Select(
+                            id => new KeyValuePair<VisibilityCalculationResultsEnum, int[]>(
+                                VisibilityCalculationResultsEnum.ObservationPointSingle, new int[] { id }))
+                                .ToArray());
+            }
+
             int index = -1;
             bool removeFullImageFromresult = false;
             int[] objIds = null;
@@ -212,8 +226,13 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
                 objIds = stationsFilteringIds;
             }
 
-            CoverageTableManager coverageTableManager = new CoverageTableManager();
-            coverageTableManager.SetCalculateAreas(pointsFilteringIds, objIds, obserpPointsfeatureClass, obserpStationsfeatureClass);
+            var coverageTableManager = new CoverageTableManager();
+            var bestOPParametersManager = new BestOPParametersManager();
+
+            if (calcResults.HasFlag(VisibilityCalculationResultsEnum.CoverageTable))
+            {
+                coverageTableManager.SetCalculateAreas(pointsFilteringIds, objIds, obserpPointsfeatureClass, obserpStationsfeatureClass);
+            }
 
             foreach (var curPoints in pointsIDs)
             {
@@ -416,36 +435,58 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
                         }
                     }
 
-                    var visibilityPotentialAreaFCName =
+                    if (calcResults.HasFlag(VisibilityCalculationResultsEnum.CoverageTable))
+                    {
+                        var visibilityPotentialAreaFCName =
                         VisibilityTask.GetResultName(pointId > -1 ?
                         VisibilityCalculationResultsEnum.VisibilityAreaPotentialSingle :
                         VisibilityCalculationResultsEnum.VisibilityAreasPotential, outputSourceName, pointId);
 
-                    coverageTableManager.AddPotentialArea(
-                        visibilityPotentialAreaFCName,
-                        (curPoints.Key == VisibilityCalculationResultsEnum.ObservationPoints),
-                        curPoints.Value[0]);
+                        coverageTableManager.AddPotentialArea(
+                            visibilityPotentialAreaFCName,
+                            (curPoints.Key == VisibilityCalculationResultsEnum.ObservationPoints),
+                            curPoints.Value[0]);
 
-                    results.Add(iStepNum.ToString() + ". " + "Розраховано потенційне покриття: " + visibilityPotentialAreaFCName + " ПС: " + pointId.ToString());
-                    iStepNum++;
+                        results.Add(iStepNum.ToString() + ". " + "Розраховано потенційне покриття: " + visibilityPotentialAreaFCName + " ПС: " + pointId.ToString());
+                        iStepNum++;
 
-                    var pointsCount = pointsFilteringIds.Where(id => id > -1).Count();
-                    coverageTableManager.CalculateCoverageTableDataForPoint(
-                        (pointId == -1),
-                        visibilityArePolyFCName,
-                        pointsCount,
-                        curPoints.Value[0]);
+                        var pointsCount = pointsFilteringIds.Where(id => id > -1).Count();
+                        coverageTableManager.CalculateCoverageTableDataForPoint(
+                            (pointId == -1),
+                            visibilityArePolyFCName,
+                            pointsCount,
+                            curPoints.Value[0]);
 
-                    results.Add(iStepNum.ToString() + ". " + "Сформовані записи таблиці покриття. для ПС: " + pointId.ToString());
-                    iStepNum++;
+                        results.Add(iStepNum.ToString() + ". " + "Сформовані записи таблиці покриття. для ПС: " + pointId.ToString());
+                        iStepNum++;
+                    }
+
+                    if (calcResults.HasFlag(VisibilityCalculationResultsEnum.BestParametersTable))
+                    {
+                        if (pointId != -1)
+                        {
+                            bestOPParametersManager.FindBestOPParameters(visibilityArePolyFCName, obserpPointsfeatureClass,
+                                                                                stationsFilteringIds, pointsFilteringIds[pointId]);
+                        }
+                    }
                 }
+
+                
             }
 
-            var coverageTable = VisibilityTask.GetResultName(VisibilityCalculationResultsEnum.CoverageTable, outputSourceName);
-            coverageTableManager.SaveDataToCoverageTable(coverageTable);
+            if (calcResults.HasFlag(VisibilityCalculationResultsEnum.CoverageTable))
+            {
+                var coverageTable = VisibilityTask.GetResultName(VisibilityCalculationResultsEnum.CoverageTable, outputSourceName);
+                coverageTableManager.SaveDataToCoverageTable(coverageTable);
 
-            results.Add(iStepNum.ToString() + ". " + "Збережена загальна таблиця покриття: " + coverageTable);
-            iStepNum++;
+                results.Add(iStepNum.ToString() + ". " + "Збережена загальна таблиця покриття: " + coverageTable);
+                iStepNum++;
+            }
+
+            if (calcResults.HasFlag(VisibilityCalculationResultsEnum.BestParametersTable))
+            {
+                bestOPParametersManager.CreateVOTable(obserpPointsfeatureClass, visibilityPercent, outputSourceName);
+            }
 
             //Add Coverage table to Available results
             if (!calcResults.HasFlag(VisibilityCalculationResultsEnum.CoverageTable))

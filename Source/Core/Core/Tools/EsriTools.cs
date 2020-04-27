@@ -2023,6 +2023,12 @@ namespace MilSpace.Core.Tools
             //for (i = 0; i <=bands.Count ; i++)
             IRasterBand rasterBand = bands.Item(0);
             IRasterStatistics rs = rasterBand.Statistics;
+
+            if(rs == null)
+            {
+                return true;
+            }
+
             var max = rs.Maximum;
             var min = rs.Minimum;
 

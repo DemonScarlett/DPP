@@ -649,7 +649,7 @@ namespace MilSpace.Visibility
                 }
 
                 double toHeight;
-                if(!txtMinHeight.Text.TryParceToDouble(out toHeight))
+                if(!txtMaxHeight.Text.TryParceToDouble(out toHeight))
                 {
                     toHeight = 0;
                 }
@@ -682,7 +682,8 @@ namespace MilSpace.Visibility
                 ResultLayerPosition = controller.GetPositionByStringValue(cmbPositions.SelectedItem.ToString()),
                 ResultLayerTransparency = Convert.ToInt16(tbTransparency.Text),
                 CalculationType = _stepControl,
-                TaskName = VisibilityManager.GenerateResultId(LocalizationContext.Instance.CalcTypeLocalisationShort[_stepControl])
+                TaskName = VisibilityManager.GenerateResultId(LocalizationContext.Instance.CalcTypeLocalisationShort[_stepControl]),
+                VisibilityPercent = 100
             };
 
             if (_stepControl == VisibilityCalcTypeEnum.OpservationPoints)
