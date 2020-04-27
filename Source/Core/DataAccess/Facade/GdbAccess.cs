@@ -519,6 +519,21 @@ namespace MilSpace.DataAccess.Facade
             return featureClassName;
         }
 
+        public void AddGeometryToFeatureClass(IGeometry geometry, IFeatureClass featureClass)
+        {
+            IWorkspaceEdit workspaceEdit = (IWorkspaceEdit)calcWorkspace;
+            workspaceEdit.StartEditing(true);
+            workspaceEdit.StartEditOperation();
+
+            var feature = featureClass.CreateFeature();
+            feature.Shape = geometry;
+
+            feature.Store();
+
+            workspaceEdit.StopEditOperation();
+            workspaceEdit.StopEditing(true);
+        }
+
         public void AddObservPoint(IPoint point, ObservationPoint pointArgs, IFeatureClass featureClass)
         {
             IWorkspaceEdit workspaceEdit = (IWorkspaceEdit)calcWorkspace;

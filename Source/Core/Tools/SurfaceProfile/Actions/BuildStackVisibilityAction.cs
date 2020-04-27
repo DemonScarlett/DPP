@@ -18,6 +18,7 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
         private IFeatureClass obserpStationsfeatureClass;
         private string rasterSource;
         private string outputSourceName;
+        private short visibilityPercent;
         private VisibilityTask session;
 
         private VisibilityCalculationResultsEnum calcResults;
@@ -46,6 +47,7 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
             calcResults = parameters.GetParameterWithValidition<VisibilityCalculationResultsEnum>(ActionParameters.Calculationresults, VisibilityCalculationResultsEnum.None).Value;
             outputSourceName = parameters.GetParameterWithValidition<string>(ActionParameters.OutputSourceName, string.Empty).Value;
             session = parameters.GetParameterWithValidition<VisibilityTask>(ActionParameters.Session, null).Value;
+            visibilityPercent = parameters.GetParameterWithValidition<short>(ActionParameters.VisibilityPercent, -1).Value;
         }
 
         public override string ActionId => ActionsEnum.vblt.ToString();
@@ -63,7 +65,8 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
                    new ActionParam<string>() { ParamName = ActionParameters.ProfileSource, Value = string.Empty},
                    new ActionParam<VisibilityCalculationResultsEnum>() { ParamName = ActionParameters.Calculationresults, Value = VisibilityCalculationResultsEnum.None},
                    new ActionParam<string>() { ParamName = ActionParameters.OutputSourceName, Value = null},
-                   new ActionParam<string>() { ParamName = ActionParameters.Session, Value = null}
+                   new ActionParam<string>() { ParamName = ActionParameters.Session, Value = null},
+                   new ActionParam<short>() { ParamName = ActionParameters.VisibilityPercent, Value = -1}
                };
             }
         }
@@ -133,6 +136,19 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
             IEnumerable<string> messages = null;
 
             string oservStationsFeatureClassName = null;
+
+            if (calcResults.HasFlag(VisibilityCalculationResultsEnum.BestParametersTable))
+            {
+                var isBestParamsFound = BestOPParametersManager.FindBestOPParameters(obserpPointsfeatureClass,
+                                                                                    obserpStationsfeatureClass,
+                                                                                    stationsFilteringIds,
+                                                                                    pointsFilteringIds,
+                                                                                    outputSourceName,
+                                                                                    rasterSource,
+                                                                                    visibilityPercent);
+
+                return messages;
+            }
 
             //Handle Observation Objects
             if (calcResults.HasFlag(VisibilityCalculationResultsEnum.ObservationObjects))

@@ -695,7 +695,8 @@ namespace MilSpace.Visibility.ViewController
                 calcParams.TaskName,
                 calcParams.TaskName,
                 calcParams.CalculationType,
-                mapDocument.ActiveView.FocusMap);
+                mapDocument.ActiveView.FocusMap,
+                0);
 
             exx++;
 
@@ -760,7 +761,7 @@ namespace MilSpace.Visibility.ViewController
             var observStationsIds = BestOPParametersManager.GetAllIdsFromFeatureClass(observationStationTemporaryFeatureClass);
             exx++;
 
-            var task = VisibilityManager.GenerateVOTask(
+            var calcTask = VisibilityManager.Generate(
                 observerPointTemporaryFeatureClass,
                 observPointsIds,
                 observationStationTemporaryFeatureClass,
@@ -770,24 +771,37 @@ namespace MilSpace.Visibility.ViewController
                 calcParams.TaskName,
                 calcParams.TaskName,
                 calcParams.CalculationType,
-                mapDocument.ActiveView.FocusMap);
+                mapDocument.ActiveView.FocusMap,
+                calcParams.VisibilityPercent);
 
-            exx++;
-            // TODO DS: Maybe change ObservationStation to IPolygon
-            
+            //var task = VisibilityManager.GenerateVOTask(
+            //    observerPointTemporaryFeatureClass,
+            //    observPointsIds,
+            //    observationStationTemporaryFeatureClass,
+            //    observStationsIds,
+            //    calcParams.RasterLayerName,
+            //    calcParams.VisibilityCalculationResults,
+            //    calcParams.TaskName,
+            //    calcParams.TaskName,
+            //    calcParams.CalculationType,
+            //    mapDocument.ActiveView.FocusMap);
 
-            var isBestParamsFound = BestOPParametersManager.FindBestOPParameters(observerPointTemporaryFeatureClass,
-                                                                                    observationStationTemporaryFeatureClass,
-                                                                                    calcParams.ObservationStation as IPolygon,
-                                                                                    calcParams.TaskName,
-                                                                                    calcParams.RasterLayerName,
-                                                                                    calcParams.VisibilityPercent);
-            exx++;
+            //exx++;
+            //// TODO DS: Maybe change ObservationStation to IPolygon
 
-            if (!isBestParamsFound)
-            {//TODO DS: Localize it
-                MessageBox.Show("Best params not found. The table has the best of possible parameters");
-            }
+
+            //var isBestParamsFound = BestOPParametersManager.FindBestOPParameters(observerPointTemporaryFeatureClass,
+            //                                                                        observationStationTemporaryFeatureClass,
+            //                                                                        calcParams.ObservationStation as IPolygon,
+            //                                                                        calcParams.TaskName,
+            //                                                                        calcParams.RasterLayerName,
+            //                                                                        calcParams.VisibilityPercent);
+            //exx++;
+
+            //if (!isBestParamsFound)
+            //{//TODO DS: Localize it
+            //    MessageBox.Show("Best params not found. The table has the best of possible parameters");
+            //}
 
             return exx;
         }

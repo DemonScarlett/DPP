@@ -665,7 +665,8 @@ namespace MilSpace.Visibility
                     ToHeight = toHeight,
                     Step = Convert.ToInt32(txtStep.Text),
                     VisibilityPercent = Convert.ToInt16(txtCoveragePercent.Text),
-                    VisibilityCalculationResults = VisibilityCalculationResultsEnum.BestParametersTable
+                    VisibilityCalculationResults = VisibilityCalculationResultsEnum.BestParametersTable | VisibilityCalculationResultsEnum.ObservationPoints
+                    | VisibilityCalculationResultsEnum.VisibilityAreaRaster
                 };
 
                 return;

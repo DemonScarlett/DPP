@@ -126,35 +126,42 @@ namespace MilSpace.Tools
 
         public static IFeatureClass CreateOOFeatureClass(IGeometry geometry, IActiveView activeView)
         {
-            return GdbAccess.Instance.GenerateTempStorage("ObservationStationGeometry", null,
+            var featureClass = GdbAccess.Instance.GenerateTempStorage("ObservationStationGeometry", null,
                                                             esriGeometryType.esriGeometryPolygon, activeView, false, true);
+
+            GdbAccess.Instance.AddGeometryToFeatureClass(geometry, featureClass);
+
+            return featureClass;
         }
         //TODO DS: Don`t forget to remove temp storages
         public static bool FindBestOPParameters(IFeatureClass observPointFeatureClass,
-                                                IFeatureClass observStationFeatureClass, IPolygon observationStationPolygon,
+                                                IFeatureClass observStationFeatureClass, int[] observStationsIds,
+                                                int[] observPointsIds,
                                                 string taskId, string rasterSource, int expectedVisibilityPercent)
         {
             //TODO DS: Deal with it
             IEnumerable<string> messages = null;
 
+            var observationStationPolygon = observStationFeatureClass.GetFeature(observStationsIds.First()).ShapeCopy as IPolygon;
+
             var visibilityPercents = new Dictionary<int, short>();
             //TODO DS: Find visibility for each point and check visibility percent, set all suitable variants (OP rows) to the VO table
-            IQueryFilter queryFilter = new QueryFilter();
-            queryFilter.WhereClause = $"{observPointFeatureClass.OIDFieldName} >= 0";
+            //IQueryFilter queryFilter = new QueryFilter();
+            //queryFilter.WhereClause = $"{observPointFeatureClass.OIDFieldName} >= 0";
 
-            var idFieldIndex = observPointFeatureClass.FindField(observPointFeatureClass.OIDFieldName);
+            //var idFieldIndex = observPointFeatureClass.FindField(observPointFeatureClass.OIDFieldName);
 
-            IFeatureCursor featureCursor = observPointFeatureClass.Search(queryFilter, true);
-            IFeature feature = featureCursor.NextFeature();
+            //IFeatureCursor featureCursor = observPointFeatureClass.Search(queryFilter, true);
+            //IFeature feature = featureCursor.NextFeature();
             // TODO DS: maybe use GetAllIdsFromFeatureClass
             try
             {
-                while (feature != null)
-                {
+                foreach(var pointId in observPointsIds)
+                { 
                     //id = (int)feature.Value[idFieldIndex];
                     ////curPoints.Key is VisibilityCalculationresultsEnum.ObservationPoints or VisibilityCalculationresultsEnum.ObservationPointSingle
 
-                    var pointId = (int)feature.Value[idFieldIndex];
+                    //var pointId = (int)feature.Value[idFieldIndex];
                     var observPointFeatureClassName = VisibilityTask.GetResultName(VisibilityCalculationResultsEnum.ObservationPoints, taskId, pointId);
                     string visibilityArePolyFCName = string.Empty;
                     //var exportedFeatureClass = GdbAccess.Instance.ExportObservationFeatureClass(
@@ -180,7 +187,7 @@ namespace MilSpace.Tools
                     // TODO DS: Remove this initialization
                     string featureClass = observPointFeatureClassName;
                     string outImageName = VisibilityTask.GetResultName(
-                        VisibilityCalculationResultsEnum.VisibilityAreaRaster,
+                        VisibilityCalculationResultsEnum.VisibilityAreaRasterSingle,
                         taskId,
                         pointId);
                     // TODO DS: Maybe you don`t need this calling in controller
@@ -352,14 +359,14 @@ namespace MilSpace.Tools
                     var visibilityPercent = Math.Round(((visibilityArea * 100) / observationStationPolygonArea.Area), 0);
                     visibilityPercents.Add(pointId, Convert.ToInt16(visibilityPercents));
 
-                    feature = featureCursor.NextFeature();
+                   // feature = featureCursor.NextFeature();
                 }
             }
             //TODO DS: Fill catch
             catch { }
             finally
             {
-                Marshal.ReleaseComObject(featureCursor);
+                //Marshal.ReleaseComObject(featureCursor);
             }
 
             //TODO DS: Check available visibility persents and generate table
