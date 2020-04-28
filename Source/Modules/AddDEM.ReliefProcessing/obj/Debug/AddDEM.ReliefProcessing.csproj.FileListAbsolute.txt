@@ -1,0 +1,9 @@
+E:\SourceCode\DemonScarlett\DPP\Source\Modules\AddDEM.ReliefProcessing\bin\Debug\Sposterezhennya.AddDem.ReliefProcessing.exe.config
+E:\SourceCode\DemonScarlett\DPP\Source\Modules\AddDEM.ReliefProcessing\bin\Debug\Sposterezhennya.AddDem.ReliefProcessing.exe
+E:\SourceCode\DemonScarlett\DPP\Source\Modules\AddDEM.ReliefProcessing\bin\Debug\Sposterezhennya.AddDem.ReliefProcessing.pdb
+E:\SourceCode\DemonScarlett\DPP\Source\Modules\AddDEM.ReliefProcessing\obj\Debug\AddDEM.ReliefProcessing.csprojAssemblyReference.cache
+E:\SourceCode\DemonScarlett\DPP\Source\Modules\AddDEM.ReliefProcessing\obj\Debug\MilSpace.AddDem.ReliefProcessing.PrepareDem.resources
+E:\SourceCode\DemonScarlett\DPP\Source\Modules\AddDEM.ReliefProcessing\obj\Debug\AddDEM.ReliefProcessing.csproj.GenerateResource.cache
+E:\SourceCode\DemonScarlett\DPP\Source\Modules\AddDEM.ReliefProcessing\obj\Debug\AddDEM.ReliefProcessing.csproj.CoreCompileInputs.cache
+E:\SourceCode\DemonScarlett\DPP\Source\Modules\AddDEM.ReliefProcessing\obj\Debug\Sposterezhennya.AddDem.ReliefProcessing.exe
+E:\SourceCode\DemonScarlett\DPP\Source\Modules\AddDEM.ReliefProcessing\obj\Debug\Sposterezhennya.AddDem.ReliefProcessing.pdb
