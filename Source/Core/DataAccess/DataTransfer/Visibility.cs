@@ -41,7 +41,6 @@ namespace MilSpace.DataAccess.DataTransfer
                             VisibilityCalculationResultsEnum.VisibilityAreaPotentialSingle,
                             VisibilityCalculationResultsEnum.VisibilityAreasPotential,
                             VisibilityCalculationResultsEnum.CoverageTable,
-                            VisibilityCalculationResultsEnum.BestParametersTable
                         }
             },
             { VisibilityCalcTypeEnum.ObservationObjects, new VisibilityCalculationResultsEnum[]
@@ -59,7 +58,10 @@ namespace MilSpace.DataAccess.DataTransfer
             },
             { VisibilityCalcTypeEnum.BestObservationParameters, new VisibilityCalculationResultsEnum[]
                         {
-                            VisibilityCalculationResultsEnum.BestParametersTable
+                            VisibilityCalculationResultsEnum.BestParametersTable,
+                            VisibilityCalculationResultsEnum.ObservationPoints,
+                             VisibilityCalculationResultsEnum.VisibilityAreaRasterSingle,
+                              VisibilityCalculationResultsEnum.VisibilityAreaPolygonSingle
                         }
             }
         };

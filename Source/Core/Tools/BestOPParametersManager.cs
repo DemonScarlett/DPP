@@ -21,7 +21,7 @@ namespace MilSpace.Tools
         private Dictionary<int, short> visibilityPercents = new Dictionary<int, short>();
 
         // TODO DS: Check this class and optimize it
-        public static IFeatureClass CreateOPFeatureClass(WizardResult calcResult, IFeatureClass observatioPointsFeatureClass, IActiveView activeView)
+        public static IFeatureClass CreateOPFeatureClass(WizardResult calcResult, IFeatureClass observatioPointsFeatureClass, IActiveView activeView, IRaster raster)
         {
             var observPointTemporaryFeatureClass = GdbAccess.Instance.GenerateTemporaryObservationPointFeatureClass(observatioPointsFeatureClass.Fields, "VO_Calculations_OPVisibility");
 
@@ -40,9 +40,11 @@ namespace MilSpace.Tools
                 SpatialReference = EsriTools.Wgs84Spatialreference
             };
 
-            observerPointGeometry.Z = calcResult.ObservationPoint.RelativeHeight.Value;
+            observerPointGeometry.AddZCoordinate(raster);
             observerPointGeometry.ZAware = true;
 
+            calcResult.ObservationStation.Project(activeView.FocusMap.SpatialReference);
+            observerPointGeometry.Project(activeView.FocusMap.SpatialReference);
 
             for (int i = 0; i < observationStationPointCollection.PointCount; i++)
             {
@@ -53,16 +55,6 @@ namespace MilSpace.Tools
                     ToPoint = observationStationPointCollection.Point[i],
                     SpatialReference = observerPointGeometry.SpatialReference
                 };
-
-                //test math calculations
-                var dist = Math.Sin(observerPointGeometry.X * Math.PI / 180)
-                            * Math.Sin(observationStationPointCollection.Point[i].X * Math.PI / 180)
-                            + Math.Cos(observerPointGeometry.X * Math.PI / 180)
-                            * Math.Cos(observationStationPointCollection.Point[i].X * Math.PI / 180)
-                            - Math.Cos((observerPointGeometry.Y - observationStationPointCollection.Point[i].Y) * Math.PI / 180);
-
-                var L = dist * 6371;
-                //end test
 
                 if (i == 0)
                 {
@@ -87,9 +79,6 @@ namespace MilSpace.Tools
             double maxAzimuth;
             double minAzimuth;
 
-            calcResult.ObservationStation.Project(activeView.FocusMap.SpatialReference);
-            observerPointGeometry.Project(activeView.FocusMap.SpatialReference);
-
             var points = EsriTools.GetPointsFromGeometries(new IGeometry[] { calcResult.ObservationStation },
                                                             observerPointGeometry.SpatialReference,
                                                             out isCircle).ToArray();
@@ -103,11 +92,12 @@ namespace MilSpace.Tools
 
             for (var currentHeight = calcResult.FromHeight; currentHeight <= calcResult.ToHeight; currentHeight += calcResult.Step)
             {
+                var height = observerPointGeometry.Z + currentHeight;
                 // Find angle to the farthest point of observation station
-                var maxTiltAngle = EsriTools.FindAngleByDistanceAndHeight(currentHeight, maxDistance);
+                var maxTiltAngle = EsriTools.FindAngleByDistanceAndHeight(height, maxDistance);
 
                 // Find angle to the nearest point of observation station
-                var minTiltAngle = EsriTools.FindAngleByDistanceAndHeight(currentHeight, minDistance);
+                var minTiltAngle = EsriTools.FindAngleByDistanceAndHeight(height, minDistance);
 
                 // Create observation point copy with changing height, distance and angles values
                 var currentObservationPoint = new ObservationPoint();
@@ -117,8 +107,8 @@ namespace MilSpace.Tools
                 currentObservationPoint.AngelMaxH = maxTiltAngle;
                 currentObservationPoint.AzimuthStart = minAzimuth;
                 currentObservationPoint.AzimuthEnd = maxAzimuth;
-                currentObservationPoint.InnerRadius = maxDistance;
-                currentObservationPoint.OuterRadius = minDistance;
+                currentObservationPoint.InnerRadius = minDistance;
+                currentObservationPoint.OuterRadius = maxDistance;
 
                 GdbAccess.Instance.AddObservPoint(observerPointGeometry, currentObservationPoint, observPointTemporaryFeatureClass);
             }
@@ -389,12 +379,14 @@ namespace MilSpace.Tools
                 return;
             }
 
+            //var visibilityPolygon = EsriTools.GetTotalPolygonFromFeatureClass(visibilityPolygonsForPointFeatureClass);
+            //var intersection = EsriTools.GetIntersection(visibilityPolygon, observationStationPolygon);
+
             var visibilityArea = EsriTools.GetObjVisibilityArea(visibilityPolygonsForPointFeatureClass, observationStationPolygon);
             var observationStationPolygonArea = observationStationPolygon as IArea;
 
             var visibilityPercent = Math.Round(((visibilityArea * 100) / observationStationPolygonArea.Area), 0);
             visibilityPercents.Add(pointId, Convert.ToInt16(visibilityPercents));
-                  
         }
 
 

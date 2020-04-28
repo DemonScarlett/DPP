@@ -229,10 +229,8 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
             var coverageTableManager = new CoverageTableManager();
             var bestOPParametersManager = new BestOPParametersManager();
 
-            if (calcResults.HasFlag(VisibilityCalculationResultsEnum.CoverageTable))
-            {
-                coverageTableManager.SetCalculateAreas(pointsFilteringIds, objIds, obserpPointsfeatureClass, obserpStationsfeatureClass);
-            }
+            
+                coverageTableManager.SetCalculateAreas(pointsFilteringIds, stationsFilteringIds, obserpPointsfeatureClass, obserpStationsfeatureClass);
 
             foreach (var curPoints in pointsIDs)
             {
@@ -465,8 +463,22 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
                     {
                         if (pointId != -1)
                         {
-                            bestOPParametersManager.FindBestOPParameters(visibilityArePolyFCName, obserpPointsfeatureClass,
-                                                                                stationsFilteringIds, pointsFilteringIds[pointId]);
+                            var visibilityPotentialAreaFCName =
+                        VisibilityTask.GetResultName(pointId > -1 ?
+                        VisibilityCalculationResultsEnum.VisibilityAreaPotentialSingle :
+                        VisibilityCalculationResultsEnum.VisibilityAreasPotential, outputSourceName, pointId);
+
+                            coverageTableManager.AddPotentialArea(
+                                visibilityPotentialAreaFCName,
+                                (curPoints.Key == VisibilityCalculationResultsEnum.ObservationPoints),
+                                curPoints.Value[0]);
+
+
+                            if (CalculationLibrary.ConvertRasterToPolygon(outImageName, $"{visibilityArePolyFCName}_VO", out messages))
+                            {
+                                bestOPParametersManager.FindBestOPParameters($"{visibilityArePolyFCName}_VO", obserpPointsfeatureClass,
+                                                                                    stationsFilteringIds, pointsFilteringIds[pointId]);
+                            }
                         }
                     }
                 }

@@ -23,7 +23,7 @@ namespace MilSpace.DataAccess.DataTransfer
     public class ObservationPoint
     {
 
-        public int Objectid { get; internal set; }
+        public int Objectid { get;  set; }//   TODO DS: return internal to set
 
         public string Id;
 

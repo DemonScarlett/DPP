@@ -9,6 +9,7 @@ using MilSpace.Tools.SurfaceProfile;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -48,9 +49,9 @@ namespace MilSpace.Tools
 
             SetCoverageAreas(observPointsIds, observPointFC);
 
-            var totalExpectedPolygon = _coverageAreaData.First(area => area.PointId == -1).Polygon;
-            var totalExpectedPolygonArea = (IArea)totalExpectedPolygon;
-            _totalExpectedArea = totalExpectedPolygonArea.Area;
+            //var totalExpectedPolygon = _coverageAreaData.First(area => area.PointId == -1).Polygon;
+            //var totalExpectedPolygonArea = (IArea)totalExpectedPolygon;
+            //_totalExpectedArea = totalExpectedPolygonArea.Area;
 
             _logger.InfoEx("> SetCalculateAreas END. calcType:{0} totalExpectedArea:{1}", _calcType.ToString(), _totalExpectedArea);
         }
@@ -116,9 +117,58 @@ namespace MilSpace.Tools
         {
             _logger.DebugEx("> SetCoverageAreas START");
 
-            var observPoints = VisibilityZonesFacade.GetObservationPointsByObjectIds(observPointsIds);
+            //var observPoints = VisibilityZonesFacade.GetObservationPointsByObjectIds(observPointsIds);
 
-            if(observPoints == null || observPoints.Count() == 0)
+            var observPoints = new List<ObservationPoint>();
+
+            IQueryFilter queryFilter = new QueryFilter();
+            queryFilter.WhereClause = $"{observPointFC.OIDFieldName} >= 0";
+
+            IFeatureCursor featureCursor = observPointFC.Search(queryFilter, true);
+            IFeature pointFeature = featureCursor.NextFeature();
+            try
+            {
+                while (pointFeature != null)
+                {
+                    var shape = pointFeature.ShapeCopy;
+
+                    var point = shape as IPoint;
+                    var pointCopy = point.Clone();
+
+                    var observPoint = new ObservationPoint {
+                        Title = (string)pointFeature.Value[observPointFC.FindField("TitleOP")],
+                        Type = (string)pointFeature.Value[observPointFC.FindField("TypeOP")],
+                        Affiliation = (string)pointFeature.Value[observPointFC.FindField("saffiliation")],
+                        X = (double)pointFeature.Value[observPointFC.FindField("XWGS")],
+                        Y = (double)pointFeature.Value[observPointFC.FindField("YWGS")],
+                        RelativeHeight = (double)pointFeature.Value[observPointFC.FindField("HRel")],
+                        AvailableHeightLover = (double)pointFeature.Value[observPointFC.FindField("AvailableHeightLover")],
+                        AvailableHeightUpper = (double)pointFeature.Value[observPointFC.FindField("AvailableHeightUpper")],
+                        AzimuthStart = (double)pointFeature.Value[observPointFC.FindField("AzimuthB")],
+                        AzimuthEnd = (double)pointFeature.Value[observPointFC.FindField("AzimuthE")],
+                        AzimuthMainAxis = (double)pointFeature.Value[observPointFC.FindField("AzimuthMainAxis")],
+                        AngelCameraRotationH = (double)pointFeature.Value[observPointFC.FindField("AnglCameraRotationH")],
+                        AngelCameraRotationV = (double)pointFeature.Value[observPointFC.FindField("AnglCameraRotationV")],
+                        AngelMinH = (double)pointFeature.Value[observPointFC.FindField("AnglMinH")],
+                        AngelMaxH = (double)pointFeature.Value[observPointFC.FindField("AnglMaxH")],
+                        InnerRadius = (double)pointFeature.Value[observPointFC.FindField("InnerRadius")],
+                        OuterRadius = (double)pointFeature.Value[observPointFC.FindField("OuterRadius")],
+                        Objectid = pointFeature.OID
+                    };
+
+                    observPoints.Add(observPoint);
+
+                    pointFeature = featureCursor.NextFeature();
+                }
+            }
+            catch { }
+            finally
+            {
+                Marshal.ReleaseComObject(featureCursor);
+            }
+
+
+            if (observPoints == null || observPoints.Count() == 0)
             {
                 _logger.ErrorEx($"> SetCoverageAreas END. Observation points are not found");
                 return;

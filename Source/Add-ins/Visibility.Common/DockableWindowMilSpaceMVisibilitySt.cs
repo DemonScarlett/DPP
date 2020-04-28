@@ -1215,7 +1215,7 @@ namespace MilSpace.Visibility
                 //return null;
                 xdd = ydd = 25.2525252525;
             }
-
+            //TODO DS: Add validation or catch
             ObservationPoint op = new ObservationPoint()
             {
                 Title = observPointName.Text,

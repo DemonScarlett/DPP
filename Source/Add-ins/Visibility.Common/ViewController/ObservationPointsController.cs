@@ -23,6 +23,7 @@ using ESRI.ArcGIS.Display;
 using MilSpace.Core.ModulesInteraction;
 using MilSpace.Core.ModalWindows;
 using ESRI.ArcGIS.esriSystem;
+using MilSpace.Configurations;
 
 namespace MilSpace.Visibility.ViewController
 {
@@ -753,8 +754,11 @@ namespace MilSpace.Visibility.ViewController
             animationProgressor.Show();
             animationProgressor.Play(0, 200);
 
-            var observerPointTemporaryFeatureClass = BestOPParametersManager.CreateOPFeatureClass(calcParams, observPointsFeatureClass, mapDocument.ActiveView);
+            var observerPointTemporaryFeatureClass = BestOPParametersManager.CreateOPFeatureClass(calcParams, observPointsFeatureClass, mapDocument.ActiveView, demLayer.Raster);
             var observationStationTemporaryFeatureClass = BestOPParametersManager.CreateOOFeatureClass(calcParams.ObservationStation, mapDocument.ActiveView);
+
+            mapDocument.FocusMap.AddLayer(EsriTools.GetFeatureLayer(observerPointTemporaryFeatureClass));
+            mapDocument.FocusMap.AddLayer(EsriTools.GetFeatureLayer(observationStationTemporaryFeatureClass));
             exx++;
 
             var observPointsIds = BestOPParametersManager.GetAllIdsFromFeatureClass(observerPointTemporaryFeatureClass);
@@ -774,6 +778,28 @@ namespace MilSpace.Visibility.ViewController
                 mapDocument.ActiveView.FocusMap,
                 calcParams.VisibilityPercent);
 
+            var ind = 0;
+
+            foreach (var id in observPointsIds)
+            {
+                string outImageName = VisibilityTask.GetResultName(
+                       VisibilityCalculationResultsEnum.VisibilityAreaRasterSingle,
+                       calcParams.TaskName,
+                       ind);
+
+                var dataSet = GdbAccess.Instance.GetDatasetFromCalcWorkspace(outImageName, VisibilityCalculationResultsEnum.VisibilityAreaRasterSingle);
+                mapDocument.FocusMap.AddLayer(EsriTools.GetRasterLayer(dataSet as IRasterDataset));
+
+                var visibilityPotentialAreaFCName =
+                           VisibilityTask.GetResultName(
+                           VisibilityCalculationResultsEnum.VisibilityAreaPotentialSingle
+                           , calcParams.TaskName, ind);
+
+                var dataSetPotent = GdbAccess.Instance.GetFeatureClass(MilSpaceConfiguration.ConnectionProperty.TemporaryGDBConnection, visibilityPotentialAreaFCName);
+                mapDocument.FocusMap.AddLayer(EsriTools.GetFeatureLayer(dataSetPotent));
+
+                ind++;
+            }
             //var task = VisibilityManager.GenerateVOTask(
             //    observerPointTemporaryFeatureClass,
             //    observPointsIds,
@@ -802,6 +828,33 @@ namespace MilSpace.Visibility.ViewController
             //{//TODO DS: Localize it
             //    MessageBox.Show("Best params not found. The table has the best of possible parameters");
             //}
+
+            if (calcTask.Finished != null)
+            {
+                var isLayerAbove = (calcParams.ResultLayerPosition == LayerPositionsEnum.Above);
+
+                var datasets = GdbAccess.Instance.GetDatasetsFromCalcWorkspace(calcTask.ResultsInfo);
+                var tbls = mapDocument.TableProperties;
+
+                ArcMapHelper.AddResultsToMapAsGroupLayer(
+                    calcTask,
+                    mapDocument.ActiveView,
+                    calcParams.RelativeLayerName,
+                    isLayerAbove,
+                    calcParams.ResultLayerTransparency
+                    , null);
+
+                exx++;
+
+                //EsriTools.AddTableToMap(
+                //    tbls,
+                //    VisibilityTask.GetResultName(VisibilityCalculationResultsEnum.CoverageTable, calcTask.Name),
+                //    calcTask.ReferencedGDB,
+                //    mapDocument,
+                //    application);
+                exx++;
+
+            }
 
             return exx;
         }
