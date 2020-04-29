@@ -485,7 +485,7 @@ namespace MilSpace.Tools
 
         public bool CreateVOTable(IFeatureClass observPointFeatureClass, int expectedVisibilityPercent, string taskId)
         {
-            var appropriateParamsIndexes = new List<int>();
+            var appropriateParams = new Dictionary<int, short>();
 
             bool isParametersFound = false;
             KeyValuePair<int, short> bestParams = new KeyValuePair<int, short>(-1, 0);
@@ -505,7 +505,7 @@ namespace MilSpace.Tools
             {
                 if (paramsVisibilityPercent.Value >= expectedVisibilityPercent)
                 {
-                    appropriateParamsIndexes.Add(paramsVisibilityPercent.Key);
+                    appropriateParams.Add(paramsVisibilityPercent.Key, paramsVisibilityPercent.Value);
                     isParametersFound = true;
                 }
                 else
@@ -517,20 +517,20 @@ namespace MilSpace.Tools
                 }
             }
 
-            var bestParamsFeatures = new List<IFeature>();
+            var bestParamsFeatures = new Dictionary<IFeature, short>();
 
             if (isParametersFound)
             {
-                foreach (var index in appropriateParamsIndexes)
+                foreach (var parameters in appropriateParams)
                 {
-                    bestParamsFeatures.Add(observPointFeatureClass.GetFeature(index));
+                    bestParamsFeatures.Add(observPointFeatureClass.GetFeature(parameters.Key), parameters.Value);
                 }
             }
             else
             {
                 if (bestParams.Key > -1)
                 {
-                    bestParamsFeatures.Add(observPointFeatureClass.GetFeature(bestParams.Key));
+                    bestParamsFeatures.Add(observPointFeatureClass.GetFeature(bestParams.Key), bestParams.Value);
                 }
             }
 

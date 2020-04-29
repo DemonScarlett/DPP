@@ -320,6 +320,14 @@ namespace MilSpace.DataAccess.Facade
             IWorkspace2 wsp2 = (IWorkspace2)calcWorkspace;
             IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)calcWorkspace;
 
+            var fieldsEdit = (IFieldsEdit)observPointsFCFields;
+
+            IField visibilityPercentField = new FieldClass();
+            IFieldEdit pointIdFieldEdit = (IFieldEdit)visibilityPercentField;
+            pointIdFieldEdit.Name_2 = "VisibilityPercent";
+            pointIdFieldEdit.Type_2 = esriFieldType.esriFieldTypeInteger;
+            fieldsEdit.AddField(visibilityPercentField);
+
             try
             {
                 if (!wsp2.get_NameExists(esriDatasetType.esriDTTable, tableName))
@@ -1351,7 +1359,7 @@ namespace MilSpace.DataAccess.Facade
             }
         }
 
-        public void FillBestParametersTable(List<IFeature> observPointBestParams, ITable table, string tableName)
+        public void FillBestParametersTable(Dictionary<IFeature, short> observPointBestParams, ITable table, string tableName)
         {//TODO DS: Change logs
             logger.InfoEx("> FillVSCoverageTable START tableName:{0}", tableName);
 
@@ -1364,7 +1372,7 @@ namespace MilSpace.DataAccess.Facade
                 foreach (var feature in observPointBestParams)
                 {
                     var newRow = table.CreateRow();
-                    var featureFields = feature.Fields;
+                    var featureFields = feature.Key.Fields;
                     
                     for(int i = 0; i < featureFields.FieldCount; i++)
                     {
@@ -1373,10 +1381,12 @@ namespace MilSpace.DataAccess.Facade
                             var fieldIndex = table.FindField(featureFields.Field[i].Name);
                             if (fieldIndex >= 0)
                             {
-                                newRow.Value[fieldIndex] = feature.Value[i];
+                                newRow.Value[fieldIndex] = feature.Key.Value[i];
                             }
                         }
                     }
+                    
+                    newRow.Value[table.FindField("VisibilityPercent")] = feature.Value;
 
                     newRow.Store();
                 }
