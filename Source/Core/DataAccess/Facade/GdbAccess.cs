@@ -286,19 +286,17 @@ namespace MilSpace.DataAccess.Facade
             workspaceEdit.StartEditing(true);
             workspaceEdit.StartEditOperation();
 
-            string newFeatureClassName = $"{name}{Helper.GetTemporaryNameSuffix()}";
-
             IFeatureClass featureClass = null;
 
             IWorkspace2 wsp2 = (IWorkspace2)calcWorkspace;
             IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)calcWorkspace;
 
-            if (!wsp2.get_NameExists(esriDatasetType.esriDTFeatureClass, newFeatureClassName))
+            if (!wsp2.get_NameExists(esriDatasetType.esriDTFeatureClass, name))
             {
                 IFeatureClassDescription fcDescription = new FeatureClassDescriptionClass();
                 IObjectClassDescription ocDescription = (IObjectClassDescription)fcDescription;
 
-                 featureClass = featureWorkspace.CreateFeatureClass(newFeatureClassName, observPointsFCFields,
+                 featureClass = featureWorkspace.CreateFeatureClass(name, observPointsFCFields,
                         ocDescription.InstanceCLSID, ocDescription.ClassExtensionCLSID,
                         esriFeatureType.esriFTSimple, "shape", "");
             }
@@ -1667,7 +1665,7 @@ namespace MilSpace.DataAccess.Facade
             return featureClass;
         }
 
-        public void RemoveCoverageAreaTemporStorage(string name)
+        public void RemoveFeatureClass(string name)
         {
             IFeatureWorkspaceManage wspManage = (IFeatureWorkspaceManage)calcWorkspace;
             var datasets = calcWorkspace.Datasets[esriDatasetType.esriDTFeatureClass];

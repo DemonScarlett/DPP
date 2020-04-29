@@ -18,12 +18,17 @@ namespace MilSpace.Tools
 {
     public class BestOPParametersManager
     {
-        private Dictionary<int, short> visibilityPercents = new Dictionary<int, short>();
+        private Dictionary<int, short> _visibilityPercents = new Dictionary<int, short>();
+        private const string _temporaryObserverPointParamsFeatureClassSuffix = "_VO_ObservPointParams";
+        private const string _temporaryObservationStationFeatureClassSuffix = "_VO_ObservStation";
 
         // TODO DS: Check this class and optimize it
-        public static IFeatureClass CreateOPFeatureClass(WizardResult calcResult, IFeatureClass observatioPointsFeatureClass, IActiveView activeView, IRaster raster)
+        public static IFeatureClass CreateOPFeatureClass(WizardResult calcResult, IFeatureClass observatioPointsFeatureClass,
+                                                            IActiveView activeView, IRaster raster)
         {
-            var observPointTemporaryFeatureClass = GdbAccess.Instance.GenerateTemporaryObservationPointFeatureClass(observatioPointsFeatureClass.Fields, "VO_Calculations_OPVisibility");
+            var observPointTemporaryFeatureClass = 
+                    GdbAccess.Instance.GenerateTemporaryObservationPointFeatureClass(observatioPointsFeatureClass.Fields,
+                                                                                        $"{calcResult.TaskName}{_temporaryObserverPointParamsFeatureClassSuffix}");
 
             double maxDistance = 0;
             double minDistance = 0;
@@ -176,16 +181,23 @@ namespace MilSpace.Tools
             return observPointTemporaryFeatureClass;
         }
 
-        public static IFeatureClass CreateOOFeatureClass(IGeometry geometry, IActiveView activeView)
+        public static IFeatureClass CreateOOFeatureClass(IGeometry geometry, IActiveView activeView, string taskId)
         {
-            var featureClass = GdbAccess.Instance.GenerateTempStorage("ObservationStationGeometry", null,
-                                                            esriGeometryType.esriGeometryPolygon, activeView, false, true);
+            var featureClass = GdbAccess.Instance.GenerateTempStorage($"{taskId}{_temporaryObservationStationFeatureClassSuffix}", null,
+                                                            esriGeometryType.esriGeometryPolygon, activeView, false);
 
             GdbAccess.Instance.AddGeometryToFeatureClass(geometry, featureClass);
 
             return featureClass;
         }
+
         //TODO DS: Don`t forget to remove temp storages
+        public static void ClearTemporaryData(string taskId, string gdb)
+        {
+           EsriTools.RemoveDataSet(gdb, $"{taskId}{_temporaryObservationStationFeatureClassSuffix}");
+           EsriTools.RemoveDataSet(gdb, $"{taskId}{_temporaryObserverPointParamsFeatureClassSuffix}");
+        }
+
         //public static bool FindBestOPParameters(IFeatureClass observPointFeatureClass,
         //                                        IFeatureClass observStationFeatureClass, int[] observStationsIds,
         //                                        int[] observPointsIds,
@@ -435,7 +447,7 @@ namespace MilSpace.Tools
 
             if(visibilityPolygonsForPointFeatureClass == null)
             {
-                visibilityPercents.Add(pointId, 0);
+                _visibilityPercents.Add(pointId, 0);
                 return;
             }
 
@@ -447,7 +459,7 @@ namespace MilSpace.Tools
 
             var visibilityPercent = Math.Round(((visibilityArea * 100) / observationStationPolygonArea.Area), 0);
             
-            visibilityPercents.Add(pointId, Convert.ToInt16(visibilityPercent));
+            _visibilityPercents.Add(pointId, Convert.ToInt16(visibilityPercent));
         }
 
 
@@ -501,7 +513,7 @@ namespace MilSpace.Tools
             var bestParamsTable = GdbAccess.Instance.GenerateVOTable(fields, bestParamsTableName);
 
 
-            foreach (var paramsVisibilityPercent in visibilityPercents)
+            foreach (var paramsVisibilityPercent in _visibilityPercents)
             {
                 if (paramsVisibilityPercent.Value >= expectedVisibilityPercent)
                 {
