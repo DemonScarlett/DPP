@@ -28,10 +28,12 @@ namespace MilSpace.Tools
             double maxDistance = 0;
             double minDistance = 0;
 
-            calcResult.ObservationStation.Project(EsriTools.Wgs84Spatialreference);
+            calcResult.ObservationStation.Project(activeView.FocusMap.SpatialReference);
 
             var observationStationPolygon = calcResult.ObservationStation as IPolygon;
-            var observationStationPointCollection = observationStationPolygon as IPointCollection;
+            var observStationEnvelope = observationStationPolygon.Envelope;
+            var observStationEnvelopePoints = new IPoint[] { observStationEnvelope.LowerLeft, observStationEnvelope.LowerRight,
+                                                                observStationEnvelope.UpperRight, observStationEnvelope.UpperLeft};
 
             var observerPointGeometry = new PointClass
             {
@@ -43,16 +45,15 @@ namespace MilSpace.Tools
             observerPointGeometry.AddZCoordinate(raster);
             observerPointGeometry.ZAware = true;
 
-            calcResult.ObservationStation.Project(activeView.FocusMap.SpatialReference);
             observerPointGeometry.Project(activeView.FocusMap.SpatialReference);
 
-            for (int i = 0; i < observationStationPointCollection.PointCount; i++)
+            for (int i = 0; i < observStationEnvelopePoints.Length; i++)
             {
 
                 var line = new Line()
                 {
                     FromPoint = observerPointGeometry,
-                    ToPoint = observationStationPointCollection.Point[i],
+                    ToPoint = observStationEnvelopePoints[i],
                     SpatialReference = observerPointGeometry.SpatialReference
                 };
 
@@ -73,6 +74,50 @@ namespace MilSpace.Tools
                         minDistance = line.Length;
                     }
                 }
+
+                double xMiddle;
+                double yMiddle;
+
+                if (i != observStationEnvelopePoints.Length - 1)
+                {
+                     xMiddle = (observStationEnvelopePoints[i].X
+                        + observStationEnvelopePoints[i + 1].X) /2;
+                     yMiddle = (observStationEnvelopePoints[i].Y
+                        + observStationEnvelopePoints[i + 1].Y) / 2;
+                }
+                else
+                {
+                     xMiddle = (observStationEnvelopePoints[i].X
+                        + observStationEnvelopePoints[0].X) / 2;
+                     yMiddle = (observStationEnvelopePoints[i].Y
+                        + observStationEnvelopePoints[0].Y) / 2;
+                }
+
+                var middlePoint = new PointClass
+                {
+                    X = xMiddle,
+                    Y = yMiddle,
+                    SpatialReference = observerPointGeometry.SpatialReference
+                };
+
+                var toMiddleLine = new Line()
+                {
+                    FromPoint = observerPointGeometry,
+                    ToPoint = middlePoint,
+                    SpatialReference = middlePoint.SpatialReference
+                };
+
+                if (minDistance > toMiddleLine.Length)
+                {
+                    minDistance = toMiddleLine.Length;
+                }
+
+                //observationStationPointCollection.Point[i].AddZCoordinate(raster);
+
+                //if(maxObservStationHeight < observationStationPointCollection.Point[i].Z)
+                //{
+                //    maxObservStationHeight = observationStationPointCollection.Point[i].Z;
+                //}
             }
 
             bool isCircle;
@@ -92,12 +137,26 @@ namespace MilSpace.Tools
 
             for (var currentHeight = calcResult.FromHeight; currentHeight <= calcResult.ToHeight; currentHeight += calcResult.Step)
             {
-                var height = observerPointGeometry.Z + currentHeight;
+                double maxTiltAngle = 0;
+                double minTiltAngle = 0;
+
+                var height = currentHeight /*+ observerPointGeometry.Z*/;
+
+                //if(maxObservStationHeight > height)
+                //{
+                //    var heighToObservStation = maxObservStationHeight - height;
+
+                //    // Find angle to the farthest point of observation station
+                //    maxTiltAngle = 90 - EsriTools.FindAngleByDistanceAndHeight(height, maxDistance);
+
+                //    // Find angle to the nearest point of observation station
+                //    minTiltAngle = EsriTools.FindAngleByDistanceAndHeight(height, minDistance);
+                //}
                 // Find angle to the farthest point of observation station
-                var maxTiltAngle = EsriTools.FindAngleByDistanceAndHeight(height, maxDistance);
+                 maxTiltAngle = EsriTools.FindAngleByDistanceAndHeight(height, maxDistance);
 
                 // Find angle to the nearest point of observation station
-                var minTiltAngle = EsriTools.FindAngleByDistanceAndHeight(height, minDistance);
+                 minTiltAngle = EsriTools.FindAngleByDistanceAndHeight(height, minDistance);
 
                 // Create observation point copy with changing height, distance and angles values
                 var currentObservationPoint = new ObservationPoint();
@@ -109,6 +168,7 @@ namespace MilSpace.Tools
                 currentObservationPoint.AzimuthEnd = maxAzimuth;
                 currentObservationPoint.InnerRadius = minDistance;
                 currentObservationPoint.OuterRadius = maxDistance;
+                currentObservationPoint.AzimuthMainAxis = calcResult.ObservationPoint.AzimuthMainAxis;
 
                 GdbAccess.Instance.AddObservPoint(observerPointGeometry, currentObservationPoint, observPointTemporaryFeatureClass);
             }
@@ -386,7 +446,8 @@ namespace MilSpace.Tools
             var observationStationPolygonArea = observationStationPolygon as IArea;
 
             var visibilityPercent = Math.Round(((visibilityArea * 100) / observationStationPolygonArea.Area), 0);
-            visibilityPercents.Add(pointId, Convert.ToInt16(visibilityPercents));
+            
+            visibilityPercents.Add(pointId, Convert.ToInt16(visibilityPercent));
         }
 
 

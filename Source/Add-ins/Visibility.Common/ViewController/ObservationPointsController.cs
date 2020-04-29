@@ -798,6 +798,14 @@ namespace MilSpace.Visibility.ViewController
                 var dataSetPotent = GdbAccess.Instance.GetFeatureClass(MilSpaceConfiguration.ConnectionProperty.TemporaryGDBConnection, visibilityPotentialAreaFCName);
                 mapDocument.FocusMap.AddLayer(EsriTools.GetFeatureLayer(dataSetPotent));
 
+                var visibilityArePolyFCName = VisibilityTask.GetResultName(VisibilityCalculationResultsEnum.VisibilityAreaPolygonSingle, calcParams.TaskName, ind);
+                var dataSetVisib = GdbAccess.Instance.GetFeatureClass(MilSpaceConfiguration.ConnectionProperty.TemporaryGDBConnection, $"{visibilityArePolyFCName}_VO");
+                mapDocument.FocusMap.AddLayer(EsriTools.GetFeatureLayer(dataSetVisib));
+
+                var observPointFeatureClassName = VisibilityTask.GetResultName(VisibilityCalculationResultsEnum.ObservationPointSingle, calcParams.TaskName, ind);
+                var dataSetPoint = GdbAccess.Instance.GetFeatureClass(MilSpaceConfiguration.ConnectionProperty.TemporaryGDBConnection, observPointFeatureClassName);
+                mapDocument.FocusMap.AddLayer(EsriTools.GetFeatureLayer(dataSetPoint));
+
                 ind++;
             }
             //var task = VisibilityManager.GenerateVOTask(

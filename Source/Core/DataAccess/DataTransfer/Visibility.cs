@@ -61,7 +61,6 @@ namespace MilSpace.DataAccess.DataTransfer
                             VisibilityCalculationResultsEnum.BestParametersTable,
                             VisibilityCalculationResultsEnum.ObservationPoints,
                              VisibilityCalculationResultsEnum.VisibilityAreaRasterSingle,
-                              VisibilityCalculationResultsEnum.VisibilityAreaPolygonSingle
                         }
             }
         };

@@ -476,14 +476,12 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
 
                             if (CalculationLibrary.ConvertRasterToPolygon(outImageName, $"{visibilityArePolyFCName}_VO", out messages))
                             {
-                                bestOPParametersManager.FindBestOPParameters($"{visibilityArePolyFCName}_VO", obserpPointsfeatureClass,
+                                bestOPParametersManager.FindBestOPParameters($"{visibilityArePolyFCName}_VO", obserpStationsfeatureClass,
                                                                                     stationsFilteringIds, pointsFilteringIds[pointId]);
                             }
                         }
                     }
                 }
-
-                
             }
 
             if (calcResults.HasFlag(VisibilityCalculationResultsEnum.CoverageTable))
