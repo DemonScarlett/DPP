@@ -59,15 +59,15 @@ namespace MilSpace.Tools
 
                 if (i == 0)
                 {
-                    maxDistance = line.Length;
+                    //maxDistance = line.Length;
                     minDistance = line.Length;
                 }
                 else
                 {
-                    if (maxDistance < line.Length)
-                    {
-                        maxDistance = line.Length;
-                    }
+                //    if (maxDistance < line.Length)
+                //    {
+                //        maxDistance = line.Length;
+                //    }
 
                     if (minDistance > line.Length)
                     {
@@ -132,7 +132,7 @@ namespace MilSpace.Tools
                                                             observerPointGeometry);
 
             EsriTools.CreateDefaultPolylinesForFun(observerPointGeometry, points, new IGeometry[] { calcResult.ObservationStation },
-                                                                                   isCircle, isPointInside, maxDistance, out minAzimuth, out maxAzimuth, out double maxLength).ToList();
+                                                                                   isCircle, isPointInside, -1, out minAzimuth, out maxAzimuth, out maxDistance).ToList();
 
 
             for (var currentHeight = calcResult.FromHeight; currentHeight <= calcResult.ToHeight; currentHeight += calcResult.Step)

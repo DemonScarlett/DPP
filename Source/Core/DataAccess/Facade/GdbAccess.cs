@@ -1352,7 +1352,7 @@ namespace MilSpace.DataAccess.Facade
         }
 
         public void FillBestParametersTable(List<IFeature> observPointBestParams, ITable table, string tableName)
-        {
+        {//TODO DS: Change logs
             logger.InfoEx("> FillVSCoverageTable START tableName:{0}", tableName);
 
             IWorkspaceEdit workspaceEdit = (IWorkspaceEdit)calcWorkspace;
@@ -1368,10 +1368,13 @@ namespace MilSpace.DataAccess.Facade
                     
                     for(int i = 0; i < featureFields.FieldCount; i++)
                     {
-                        var fieldIndex = table.FindField(featureFields.Field[i].Name);
-                        if (fieldIndex >= 0)
+                        if (featureFields.Field[i].Name != table.OIDFieldName)
                         {
-                            newRow.Value[fieldIndex] = feature.Value[i];
+                            var fieldIndex = table.FindField(featureFields.Field[i].Name);
+                            if (fieldIndex >= 0)
+                            {
+                                newRow.Value[fieldIndex] = feature.Value[i];
+                            }
                         }
                     }
 

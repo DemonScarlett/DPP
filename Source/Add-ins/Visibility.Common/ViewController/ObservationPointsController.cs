@@ -839,31 +839,17 @@ namespace MilSpace.Visibility.ViewController
 
             if (calcTask.Finished != null)
             {
-                var isLayerAbove = (calcParams.ResultLayerPosition == LayerPositionsEnum.Above);
-
-                var datasets = GdbAccess.Instance.GetDatasetsFromCalcWorkspace(calcTask.ResultsInfo);
                 var tbls = mapDocument.TableProperties;
 
-                ArcMapHelper.AddResultsToMapAsGroupLayer(
-                    calcTask,
-                    mapDocument.ActiveView,
-                    calcParams.RelativeLayerName,
-                    isLayerAbove,
-                    calcParams.ResultLayerTransparency
-                    , null);
-
-                exx++;
-
-                //EsriTools.AddTableToMap(
-                //    tbls,
-                //    VisibilityTask.GetResultName(VisibilityCalculationResultsEnum.CoverageTable, calcTask.Name),
-                //    calcTask.ReferencedGDB,
-                //    mapDocument,
-                //    application);
+                EsriTools.AddTableToMap(
+                    tbls,
+                    VisibilityTask.GetResultName(VisibilityCalculationResultsEnum.BestParametersTable, calcTask.Name),
+                    calcTask.ReferencedGDB,
+                    mapDocument,
+                    application);
                 exx++;
 
             }
-
             return exx;
         }
 
