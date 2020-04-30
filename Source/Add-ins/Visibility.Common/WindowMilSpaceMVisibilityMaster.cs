@@ -400,8 +400,9 @@ namespace MilSpace.Visibility
             txtMaxAzimuth.Text = point.AzimuthEnd.Value.ToFormattedString(1);
             txtMinAngle.Text = point.AngelMinH.Value.ToFormattedString(1);
             txtMaxAngle.Text = point.AngelMaxH.Value.ToFormattedString(1);
-            txtMinHeight.Text = point.RelativeHeight.Value.ToFormattedString(1);
-            txtMaxHeight.Text = point.RelativeHeight.Value.ToFormattedString(1);
+            txtMinHeight.Text = point.RelativeHeight.Value == 0 ? "1" : point.RelativeHeight.Value.ToFormattedString(1);
+            txtMaxHeight.Text = (point.RelativeHeight.Value + 100).ToFormattedString(1);
+            txtStep.Text = "10";
 
             SetSelectedOPControlsEnabled(true);
         }
@@ -731,6 +732,8 @@ namespace MilSpace.Visibility
             {
                 FinalResult.VisibilityCalculationResults |= VisibilityCalculationResultsEnum.VisibilityAreaRasterSingle | VisibilityCalculationResultsEnum.ObservationPointSingle | VisibilityCalculationResultsEnum.VisibilityAreaPotentialSingle;
             }
+
+            FinalResult.VisibilityCalculationResults |= VisibilityCalculationResultsEnum.CoverageTable;
         }
 
         public void SummaryInfo()
@@ -1063,7 +1066,7 @@ namespace MilSpace.Visibility
         private void TxtHeight_Leave(object sender, EventArgs e)
         {
             var textBox = sender as TextBox;
-            ValidateRangedValues(textBox, 0, Double.MaxValue, _selectedObservationPoint.RelativeHeight.Value.ToFormattedString(1), txtMinHeight, txtMaxHeight);
+            ValidateRangedValues(textBox, 1, Double.MaxValue, _selectedObservationPoint.RelativeHeight.Value.ToFormattedString(1), txtMinHeight, txtMaxHeight);
         }
 
         private void TxtStep_Leave(object sender, EventArgs e)
@@ -1147,8 +1150,6 @@ namespace MilSpace.Visibility
                 }
             }
         }
-
-
         #endregion
 
     }

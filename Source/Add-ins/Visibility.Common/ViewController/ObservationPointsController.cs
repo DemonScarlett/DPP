@@ -745,33 +745,48 @@ namespace MilSpace.Visibility.ViewController
             {
                 throw new MilSpaceVisibilityCalcFailedException($"Cannot find DEM layer {calcParams.RasterLayerName }.");
             }
+
             calcParams.RasterLayerName = demLayer.FilePath;
             exx++;
 
             var observPointsFeatureClass = GetObservatioPointFeatureClass(mapDocument.ActiveView);
             exx++;
 
-            animationProgressor.Show();
-            animationProgressor.Play(0, 200);
-
             var observerPointTemporaryFeatureClass = BestOPParametersManager.CreateOPFeatureClass(
                     calcParams,
                     observPointsFeatureClass,
                     mapDocument.ActiveView,
                     demLayer.Raster);
+            exx++;
 
             var observationStationTemporaryFeatureClass = BestOPParametersManager.CreateOOFeatureClass(
                     calcParams.ObservationStation,
                     mapDocument.ActiveView,
                     calcParams.TaskName);
-
-            mapDocument.FocusMap.AddLayer(EsriTools.GetFeatureLayer(observerPointTemporaryFeatureClass));
-            mapDocument.FocusMap.AddLayer(EsriTools.GetFeatureLayer(observationStationTemporaryFeatureClass));
             exx++;
 
             var observPointsIds = BestOPParametersManager.GetAllIdsFromFeatureClass(observerPointTemporaryFeatureClass);
             var observStationsIds = BestOPParametersManager.GetAllIdsFromFeatureClass(observationStationTemporaryFeatureClass);
+
             exx++;
+
+            if (observPointsIds == null || observStationsIds == null)
+            {
+                var featureClassName = observPointsIds == null ?
+                         LocalizationContext.Instance.FindLocalizedElement("ObserverPointParametersText", "параметрів пункту спостереження") :
+                         LocalizationContext.Instance.FindLocalizedElement("ObservationStationText", "об'єкту спостреження");
+
+                MessageBox.Show(
+                     String.Format(LocalizationContext.Instance.FindLocalizedElement("ErrorInTemporaryStorageGenerating",
+                         "Під час генерації векторного класу {0} сталася помилка"), featureClassName),
+                     LocalizationContext.Instance.MessageBoxCaption);
+
+                BestOPParametersManager.ClearTemporaryData(calcParams.TaskName);
+                return exx;
+            }
+
+            animationProgressor.Show();
+            animationProgressor.Play(0, 200);
 
             var calcTask = VisibilityManager.Generate(
                 observerPointTemporaryFeatureClass,
@@ -786,68 +801,10 @@ namespace MilSpace.Visibility.ViewController
                 mapDocument.ActiveView.FocusMap,
                 calcParams.VisibilityPercent);
 
+            exx++;
+
             BestOPParametersManager.ClearTemporaryData(calcParams.TaskName, calcTask.ReferencedGDB);
-
-            // For test only
-            //
-            //var ind = 0;
-
-            //foreach (var id in observPointsIds)
-            //{
-            //    string outImageName = VisibilityTask.GetResultName(
-            //           VisibilityCalculationResultsEnum.VisibilityAreaRasterSingle,
-            //           calcParams.TaskName,
-            //           ind);
-
-            //    var dataSet = GdbAccess.Instance.GetDatasetFromCalcWorkspace(outImageName, VisibilityCalculationResultsEnum.VisibilityAreaRasterSingle);
-            //    mapDocument.FocusMap.AddLayer(EsriTools.GetRasterLayer(dataSet as IRasterDataset));
-
-            //    var visibilityPotentialAreaFCName =
-            //               VisibilityTask.GetResultName(
-            //               VisibilityCalculationResultsEnum.VisibilityAreaPotentialSingle
-            //               , calcParams.TaskName, ind);
-
-            //    var dataSetPotent = GdbAccess.Instance.GetFeatureClass(MilSpaceConfiguration.ConnectionProperty.TemporaryGDBConnection, visibilityPotentialAreaFCName);
-            //    mapDocument.FocusMap.AddLayer(EsriTools.GetFeatureLayer(dataSetPotent));
-
-            //    var visibilityArePolyFCName = VisibilityTask.GetResultName(VisibilityCalculationResultsEnum.VisibilityAreaPolygonSingle, calcParams.TaskName, ind);
-            //    var dataSetVisib = GdbAccess.Instance.GetFeatureClass(MilSpaceConfiguration.ConnectionProperty.TemporaryGDBConnection, $"{visibilityArePolyFCName}_VO");
-            //    mapDocument.FocusMap.AddLayer(EsriTools.GetFeatureLayer(dataSetVisib));
-
-            //    var observPointFeatureClassName = VisibilityTask.GetResultName(VisibilityCalculationResultsEnum.ObservationPointSingle, calcParams.TaskName, ind);
-            //    var dataSetPoint = GdbAccess.Instance.GetFeatureClass(MilSpaceConfiguration.ConnectionProperty.TemporaryGDBConnection, observPointFeatureClassName);
-            //    mapDocument.FocusMap.AddLayer(EsriTools.GetFeatureLayer(dataSetPoint));
-
-            //    ind++;
-            //}
-            //var task = VisibilityManager.GenerateVOTask(
-            //    observerPointTemporaryFeatureClass,
-            //    observPointsIds,
-            //    observationStationTemporaryFeatureClass,
-            //    observStationsIds,
-            //    calcParams.RasterLayerName,
-            //    calcParams.VisibilityCalculationResults,
-            //    calcParams.TaskName,
-            //    calcParams.TaskName,
-            //    calcParams.CalculationType,
-            //    mapDocument.ActiveView.FocusMap);
-
-            //exx++;
-            //// TODO DS: Maybe change ObservationStation to IPolygon
-
-
-            //var isBestParamsFound = BestOPParametersManager.FindBestOPParameters(observerPointTemporaryFeatureClass,
-            //                                                                        observationStationTemporaryFeatureClass,
-            //                                                                        calcParams.ObservationStation as IPolygon,
-            //                                                                        calcParams.TaskName,
-            //                                                                        calcParams.RasterLayerName,
-            //                                                                        calcParams.VisibilityPercent);
-            //exx++;
-
-            //if (!isBestParamsFound)
-            //{//TODO DS: Localize it
-            //    MessageBox.Show("Best params not found. The table has the best of possible parameters");
-            //}
+            exx++;
 
             if (calcTask.Finished != null)
             {
@@ -1694,7 +1651,7 @@ namespace MilSpace.Visibility.ViewController
             }
             else
             {
-                return points.First().Value;
+                return selectedPointsGeoms.First();
             }
         }
 

@@ -89,7 +89,7 @@ namespace MilSpace.Tools
                 ParamName = ActionParamNamesCore.Action,
                 Value = ActionsEnum.vblt.ToString()
             };
-            //TODO DS: Add temp tables removing, rename observObj temp table
+           
             var prm = new List<IActionParam>
             {
                action,
@@ -146,119 +146,7 @@ namespace MilSpace.Tools
 
             return calcTask;
         }
-
-        public static VisibilityTask GenerateVOTask(
-           IFeatureClass obervationPoints,
-           IEnumerable<int> pointsToExport,
-           IFeatureClass obervationStations,
-           IEnumerable<int> stationsToExport,
-           string sourceDem,
-           VisibilityCalculationResultsEnum calcResults,
-           string taskName,
-           string taskId,
-           VisibilityCalcTypeEnum calculationType,
-           IMap currentMap,
-           short visibilityPercent)
-        {
-            //logger.InfoEx("> Generate START. Visiblility result {2} using DEM {0} from observation points {1}"
-            //    .InvariantFormat(sourceDem, obervationPoints, taskId));
-
-            CurrentMap = currentMap;
-            //Target dataset name
-            string nameOfTargetDataset = taskId;
-
-            var calcTask = new VisibilityTask
-            {
-                Id = nameOfTargetDataset,
-                Name = taskName,
-                ReferencedGDB = MilSpaceConfiguration.ConnectionProperty.TemporaryGDBConnection,
-                CalculatedResults = (int)calcResults,
-                UserName = Environment.UserName,
-                CalculationType = calculationType,
-                Surface = sourceDem
-            };
-
-            calcTask = VisibilityZonesFacade.AddVisibilityTask(calcTask);
-            OnGenerationStarted.Invoke(true, calcTask.Id);
-
-            if (calcTask == null)
-            {
-                throw new MilSpaceVisibilityCalcFailedException("Cannot save visibility session");
-            }
-
-            var action = new ActionParam<string>()
-            {
-                ParamName = ActionParamNamesCore.Action,
-                Value = ActionsEnum.vblt.ToString()
-            };
-
-            var prm = new List<IActionParam>
-            {
-               action,
-               new ActionParam<IFeatureClass>()
-               { ParamName = ActionParameters.FeatureClass, Value = obervationPoints},
-               new ActionParam<IFeatureClass>()
-               { ParamName = ActionParameters.FeatureClassX, Value = obervationStations},
-               new ActionParam<int[]>()
-               { ParamName = ActionParameters.FilteringPointsIds, Value = pointsToExport.ToArray()},
-               new ActionParam<int[]>()
-               { ParamName = ActionParameters.FilteringStationsIds, Value = stationsToExport.ToArray()},
-               new ActionParam<string>()
-               { ParamName = ActionParameters.ProfileSource, Value = sourceDem},
-               new ActionParam<VisibilityCalculationResultsEnum>()
-               { ParamName = ActionParameters.Calculationresults, Value = calcResults},
-               new ActionParam<string>()
-               { ParamName = ActionParameters.OutputSourceName, Value = nameOfTargetDataset},
-               new ActionParam<VisibilityTask>()
-               { ParamName = ActionParameters.Session, Value = calcTask},
-               new ActionParam<short>()
-               {ParamName = ActionParameters.VisibilityPercent, Value =  visibilityPercent}
-            };
-
-            var procc = new ActionProcessor(prm);
-            VisibilityZonesFacade.StarthVisibilitySession(calcTask);
-
-            var res = procc.Process<VisibilityCalculationResult>();
-
-            //calcTask = res.Result.Session;
-            //if (res.Result.CalculationMessages != null && res.Result.CalculationMessages.Count() > 0)
-            //{
-            //    foreach (var calcRes in res.Result.CalculationMessages)
-            //    {
-            //        //Here should be checked if the results match with session.CalculatedResults
-            //        //logger.InfoEx($"The result layer {calcRes} was successfully composed in {calcTask.ReferencedGDB}");
-            //    }
-            //}
-            IEnumerable<string> messages = null;
-
-            var result = CalculationLibrary.GenerateVisibilityData(
-                sourceDem,
-                obervationPoints.AliasName,
-                VisibilityAnalysisTypesEnum.Frequency,
-                VisibilityTask.GetResultName(VisibilityCalculationResultsEnum.VisibilityAreaRaster,
-                nameOfTargetDataset,
-                -1),
-                messages);
-
-            if (result == false)
-            {
-                VisibilityZonesFacade.UpdateVisibilityTask(calcTask);
-              //  throw res.Exception;
-            }
-            else
-            {
-                VisibilityZonesFacade.FinishVisibilityTask(calcTask);
-                VisibilityZonesFacade.AddVisibilityResults(calcTask.GetVisibilityResults(false));
-            }
-
-            //if (!string.IsNullOrWhiteSpace(res.ErrorMessage))
-            //{
-            //    throw new MilSpaceVisibilityCalcFailedException(res.ErrorMessage);
-            //}
-
-            return calcTask;
-        }
-
+        
         public static string GenerateResultId(string preffix = VisibilityCalcFeatureClass)
         {
             logger.DebugEx("> GenerateResultId Periffics: {0}", preffix);

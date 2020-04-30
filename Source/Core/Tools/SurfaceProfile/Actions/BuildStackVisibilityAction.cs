@@ -137,19 +137,6 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
 
             string oservStationsFeatureClassName = null;
 
-            //if (calcResults.HasFlag(VisibilityCalculationResultsEnum.BestParametersTable))
-            //{
-            //    var isBestParamsFound = BestOPParametersManager.FindBestOPParameters(obserpPointsfeatureClass,
-            //                                                                        obserpStationsfeatureClass,
-            //                                                                        stationsFilteringIds,
-            //                                                                        pointsFilteringIds,
-            //                                                                        outputSourceName,
-            //                                                                        rasterSource,
-            //                                                                        visibilityPercent);
-
-            //    return messages;
-            //}
-
             //Handle Observation Objects
             if (calcResults.HasFlag(VisibilityCalculationResultsEnum.ObservationObjects))
             {
@@ -229,8 +216,10 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
             var coverageTableManager = new CoverageTableManager();
             var bestOPParametersManager = new BestOPParametersManager();
 
-            
+            if (calcResults.HasFlag(VisibilityCalculationResultsEnum.CoverageTable))
+            {
                 coverageTableManager.SetCalculateAreas(pointsFilteringIds, stationsFilteringIds, obserpPointsfeatureClass, obserpStationsfeatureClass);
+            }
 
             foreach (var curPoints in pointsIDs)
             {
@@ -463,22 +452,11 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
                     {
                         if (pointId != -1)
                         {
-                            var visibilityPotentialAreaFCName =
-                        VisibilityTask.GetResultName(pointId > -1 ?
-                        VisibilityCalculationResultsEnum.VisibilityAreaPotentialSingle :
-                        VisibilityCalculationResultsEnum.VisibilityAreasPotential, outputSourceName, pointId);
+                            bestOPParametersManager.FindVisibilityPercent(visibilityArePolyFCName, obserpStationsfeatureClass,
+                                                                                   stationsFilteringIds, pointsFilteringIds[pointId]);
 
-                            coverageTableManager.AddPotentialArea(
-                                visibilityPotentialAreaFCName,
-                                (curPoints.Key == VisibilityCalculationResultsEnum.ObservationPoints),
-                                curPoints.Value[0]);
-
-
-                            if (CalculationLibrary.ConvertRasterToPolygon(outImageName, $"{visibilityArePolyFCName}_VO", out messages))
-                            {
-                                bestOPParametersManager.FindBestOPParameters($"{visibilityArePolyFCName}_VO", obserpStationsfeatureClass,
-                                                                                    stationsFilteringIds, pointsFilteringIds[pointId]);
-                            }
+                            results.Add(iStepNum.ToString() + ". " + "Знайдено відсоток покриття для кроку " + pointId.ToString());
+                            iStepNum++;
                         }
                     }
                 }
@@ -495,15 +473,22 @@ namespace MilSpace.Tools.SurfaceProfile.Actions
 
             if (calcResults.HasFlag(VisibilityCalculationResultsEnum.BestParametersTable))
             {
-                bestOPParametersManager.CreateVOTable(obserpPointsfeatureClass, visibilityPercent, outputSourceName);
+                var bestParamsTableName = VisibilityTask.GetResultName(VisibilityCalculationResultsEnum.BestParametersTable, outputSourceName);
+                
+                if ( bestOPParametersManager.CreateVOTable(obserpPointsfeatureClass,
+                                                            visibilityPercent, bestParamsTableName))
+                {
+                    results.Add(iStepNum.ToString() + ". " + "Збережена таблиця накращих параметрів ПН для мінімальної видимості " + visibilityPercent + "%: " + bestParamsTableName);
+                    iStepNum++;
+                }
+                else
+                {
+                    results.Add(iStepNum.ToString() + ". " + "Відсутні результати для видимості " + visibilityPercent + 
+                                    "%. Збережена таблиця з накращими можливими параметрами ПН: " + bestParamsTableName);
+                    iStepNum++;
+                }
             }
-
-            //Add Coverage table to Available results
-            if (!calcResults.HasFlag(VisibilityCalculationResultsEnum.CoverageTable))
-            {
-                calcResults |= VisibilityCalculationResultsEnum.CoverageTable;
-            }
-
+            
             //Set real results to show
             if (removeFullImageFromresult)
             {

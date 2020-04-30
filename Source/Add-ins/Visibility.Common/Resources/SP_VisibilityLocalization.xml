@@ -306,6 +306,7 @@
   <UnexpectedErrorMessage>Виникла помилка. Для перегляду повної інформації зверніться до журналу роботи</UnexpectedErrorMessage>
   <GeoCalcModuleDoesnotExistMessage>Модуль Геокалькулятор не було підключено \nБудь ласка додайте модуль до проекту, щоб мати можливість взаємодіяти з ним</GeoCalcModuleDoesnotExistMessage>
   <ObservPointscModuleDoesnotExistMessage>Модуль \"Видимість\" не було підключено. Будь ласка додайте модуль до проекту, щоб мати можливість взаємодіяти з ним</ObservPointscModuleDoesnotExistMessage>
+  <ErrorInTemporaryStorageGenerating>Під час генерації векторного класу {0} сталася помилка</ErrorInTemporaryStorageGenerating>
   
   <ObservPointRemoveMessage>Ви дійсно бажаєте видалити точку (ПС)?</ObservPointRemoveMessage>
   <VisibilityTaskRemoveMessage>Ви дійсно бажаєте видалити результат розрахунку з поточного сеансу?</VisibilityTaskRemoveMessage>
@@ -346,5 +347,7 @@
   <LayersListLabelText>Шари</LayersListLabelText>
   <ChooseButtonText>Обрати</ChooseButtonText>
   <ChooseLayerWindowCaption>Обрати шар</ChooseLayerWindowCaption>
+  <ObserverPointParametersText>параметрів пункту спостереження</ObserverPointParametersText>
+  <ObservationStationText>об'єкту спостреження</ObservationStationText>
 
 </SP_Visibility>

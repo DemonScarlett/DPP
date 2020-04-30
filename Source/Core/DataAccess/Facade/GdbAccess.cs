@@ -1018,8 +1018,8 @@ namespace MilSpace.DataAccess.Facade
             }
 
             pointFeature.set_Value(featureClass.FindField("TitleOP"), pointArgs.Title);
-            pointFeature.set_Value(featureClass.FindField("TypeOP"), pointArgs.Type.ToString());
-            pointFeature.set_Value(featureClass.FindField("saffiliation"), pointArgs.Affiliation.ToString());
+            pointFeature.set_Value(featureClass.FindField("TypeOP"), pointArgs.Type);
+            pointFeature.set_Value(featureClass.FindField("saffiliation"), pointArgs.Affiliation);
             pointFeature.set_Value(featureClass.FindField("XWGS"), pointArgs.X);
             pointFeature.set_Value(featureClass.FindField("YWGS"), pointArgs.Y);
             pointFeature.set_Value(featureClass.FindField("HRel"), pointArgs.RelativeHeight);
@@ -1358,8 +1358,8 @@ namespace MilSpace.DataAccess.Facade
         }
 
         public void FillBestParametersTable(Dictionary<IFeature, short> observPointBestParams, ITable table, string tableName)
-        {//TODO DS: Change logs
-            logger.InfoEx("> FillVSCoverageTable START tableName:{0}", tableName);
+        {
+            logger.InfoEx("> FillBestParametersTable START tableName:{0}", tableName);
 
             IWorkspaceEdit workspaceEdit = (IWorkspaceEdit)calcWorkspace;
             workspaceEdit.StartEditing(true);
@@ -1388,29 +1388,7 @@ namespace MilSpace.DataAccess.Facade
 
                     newRow.Store();
                 }
-                //    var newRow = table.CreateRow();
-
-                //    newRow.Value[table.FindField(feature.)] = row.ObservPointName;
-
-                //    if (row.ObservPointId != -1)
-                //    {
-                //        newRow.Value[table.FindField("IdOP")] = row.ObservPointId;
-                //    }
-
-                //    newRow.Value[table.FindField("ExpectedVisibilityArea")] = row.ExpectedArea;
-                //    newRow.Value[table.FindField("VisibilityArea")] = row.VisibilityArea;
-                //    newRow.Value[table.FindField("VisibilityPercentage")] = row.VisibilityPercent;
-                //    newRow.Value[table.FindField("CurrentToAllExpectedVAPercentage")] = row.ToAllExpectedAreaPercent;
-                //    newRow.Value[table.FindField("CurrentVAToAllExpectedVAPercentage")] = row.ToAllVisibilityAreaPercent;
-
-                //    if (row.ObservPointsSeeCount != -1)
-                //    {
-                //        newRow.Value[table.FindField("OPSee")] = row.ObservPointsSeeCount;
-                //    }
-
-                //    newRow.Store();
-                //}
-
+               
                 workspaceEdit.StopEditOperation();
                 workspaceEdit.StopEditing(true);
 

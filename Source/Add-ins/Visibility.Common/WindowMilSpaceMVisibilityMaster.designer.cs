@@ -1169,7 +1169,7 @@ namespace MilSpace.Visibility
             this.chckOP.UseVisualStyleBackColor = true;
             this.chckOP.CheckedChanged += new System.EventHandler(this.Select_All_Points);
             // 
-            // dvgCheckList
+            // dgvCheckList
             // 
             this.dgvCheckList.AllowUserToAddRows = false;
             this.dgvCheckList.AllowUserToDeleteRows = false;
@@ -1184,7 +1184,7 @@ namespace MilSpace.Visibility
             this.dgvCheckList.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnF2;
             this.dgvCheckList.Location = new System.Drawing.Point(0, 0);
             this.dgvCheckList.MultiSelect = false;
-            this.dgvCheckList.Name = "dvgCheckList";
+            this.dgvCheckList.Name = "dgvCheckList";
             this.dgvCheckList.RowHeadersVisible = false;
             this.dgvCheckList.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             this.dgvCheckList.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;

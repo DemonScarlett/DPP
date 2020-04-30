@@ -612,6 +612,13 @@ namespace MilSpace.Core.Tools
 
             if (isCircle)
             {
+                if (minAzimuth > maxAzimuth)
+                {
+                    var buff = maxAzimuth;
+                    maxAzimuth = minAzimuth;
+                    minAzimuth = buff;
+                }
+
                 return CreatePolylinesFromPointAndAzimuths(centerPoint, maxLength, 6, 0, 360);
             }
 
